@@ -19,7 +19,7 @@ import PeerNameColorItem
 import BoostLevelIconComponent
 
 private let enabledPublicBioEntities: EnabledEntityTypes = [.allUrl, .mention, .hashtag]
-private let enabledPrivateBioEntities: EnabledEntityTypes = [.internalUrl, .mention, .hashtag]
+private let enabledPrivateBioEntities: EnabledEntityTypes = [.allUrl, .mention, .hashtag] // MARK: Swiftgram
 
 enum InfoSection: Int, CaseIterable {
     case groupLocation
