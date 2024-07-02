@@ -1,3 +1,9 @@
+#if DEBUG
+import SGSimpleSettings
+#endif
+import SGTranslationLangFix
+import SwiftSoup
+
 import Foundation
 import Postbox
 import SwiftSignalKit
@@ -36,7 +42,7 @@ func _internal_translate(network: Network, text: String, toLang: String, entitie
         apiText = [.textWithEntities(.init(text: text, entities: apiEntitiesFromMessageTextEntities(entities, associatedPeers: SimpleDictionary())))]
     }
 
-    return network.request(Api.functions.messages.translateText(flags: flags, peer: peer, id: messageId.flatMap { [$0] }, text: apiText, toLang: toLang, tone: tone.rawValue))
+    return network.request(Api.functions.messages.translateText(flags: flags, peer: peer, id: messageId.flatMap { [$0] }, text: apiText, toLang: sgTranslationLangFix(toLang), tone: tone.rawValue))
     |> mapError { error -> TranslationError in
         if error.errorDescription.hasPrefix("FLOOD_WAIT") {
             return .limitExceeded
@@ -258,7 +264,7 @@ private func _internal_translateMessagesByPeerId(account: Account, peerId: Engin
                     }
                 }
             } else {
-                msgs = account.network.request(Api.functions.messages.translateText(flags: flags, peer: inputPeer, id: id, text: nil, toLang: toLang, tone: tone != .neutral ? tone.rawValue : nil))
+                msgs = account.network.request(Api.functions.messages.translateText(flags: flags, peer: inputPeer, id: id, text: nil, toLang: toLang))
                 |> map(Optional.init)
                 |> mapError { error -> TranslationError in
                     if error.errorDescription.hasPrefix("FLOOD_WAIT") {
@@ -357,6 +363,42 @@ private func _internal_translateMessagesByPeerId(account: Account, peerId: Engin
     }
 }
 
+func _internal_translateMessagesViaText(account: Account, messagesDict: [EngineMessage.Id: String], fromLang: String?, toLang: String, enableLocalIfPossible: Bool, generateEntitiesFunction: @escaping (String) -> [MessageTextEntity]) -> Signal<Never, TranslationError> {
+    var listOfSignals: [Signal<Void, TranslationError>] = []
+    for (messageId, text) in messagesDict {
+        listOfSignals.append(
+            //                _internal_translate(network: account.network, text: text, toLang: toLang)
+            //                |> mapToSignal { result -> Signal<Void, TranslationError> in
+            //                guard let translatedText = result else {
+            //                    return .complete()
+            //                }
+            gtranslate(text, toLang)
+            |> mapError { _ -> TranslationError in
+                return .generic
+            }
+            |> mapToSignal { translatedText -> Signal<Void, TranslationError> in
+//                guard case let .result(translatedText) = result else {
+//                    return .complete()
+//                }
+                return account.postbox.transaction { transaction in
+                    transaction.updateMessage(messageId, update: { currentMessage in
+                        let updatedAttribute: TranslationMessageAttribute = TranslationMessageAttribute(text: translatedText, entities: generateEntitiesFunction(translatedText), toLang: toLang)
+                        let storeForwardInfo = currentMessage.forwardInfo.flatMap(StoreMessageForwardInfo.init)
+                        var attributes = currentMessage.attributes.filter { !($0 is TranslationMessageAttribute) }
+
+                        attributes.append(updatedAttribute)
+
+                        return .update(StoreMessage(id: currentMessage.id, customStableId: nil, globallyUniqueId: currentMessage.globallyUniqueId, groupingKey: currentMessage.groupingKey, threadId: currentMessage.threadId, timestamp: currentMessage.timestamp, flags: StoreMessageFlags(currentMessage.flags), tags: currentMessage.tags, globalTags: currentMessage.globalTags, localTags: currentMessage.localTags, forwardInfo: storeForwardInfo, authorId: currentMessage.author?.id, text: currentMessage.text, attributes: attributes, media: currentMessage.media))
+                    })
+                }
+                |> castError(TranslationError.self)
+//                |> castError(TranslateFetchError.self)
+            }
+        )
+    }
+    return combineLatest(listOfSignals) |> ignoreValues
+}
+
 func _internal_togglePeerMessagesTranslationHidden(account: Account, peerId: EnginePeer.Id, hidden: Bool) -> Signal<Never, NoError> {
     return account.postbox.transaction { transaction -> Api.InputPeer? in
         transaction.updatePeerCachedData(peerIds: Set([peerId]), update: { _, cachedData -> CachedPeerData? in
@@ -405,147 +447,5 @@ func _internal_togglePeerMessagesTranslationHidden(account: Account, peerId: Eng
             return .single(nil)
         }
         |> ignoreValues
-    }
-}
-
-public enum TelegramComposeAIMessageMode {
-    public enum StyleId: Hashable {
-        case neutral
-        case style(String)
-    }
-    
-    public struct Style: Equatable {
-        public let type: String
-        public let title: String
-        public let emojiFileId: Int64?
-        
-        public var id: StyleId {
-            return .style(self.type)
-        }
-        
-        public init(type: String, title: String, emojiFileId: Int64?) {
-            self.type = type
-            self.title = title
-            self.emojiFileId = emojiFileId
-        }
-    }
-    
-    case translate(toLanguage: String, emojify: Bool, style: StyleId)
-    case stylize(emojify: Bool, style: StyleId)
-    case proofread
-}
-
-public final class TelegramAIComposeMessageResult {
-    public let text: TextWithEntities
-    public let diffRanges: [Range<Int>]
-    
-    public init(text: TextWithEntities, diffRanges: [Range<Int>]) {
-        self.text = text
-        self.diffRanges = diffRanges
-    }
-}
-
-extension TextWithEntities {
-    init(apiValue: Api.TextWithEntities) {
-        switch apiValue {
-        case let .textWithEntities(textWithEntities):
-            self.init(text: textWithEntities.text, entities: messageTextEntitiesFromApiEntities(textWithEntities.entities))
-        }
-    }
-}
-
-func _internal_composeAIMessageStyles(account: Account) -> Signal<[TelegramComposeAIMessageMode.Style], NoError> {
-    return account.postbox.transaction { transaction -> [TelegramComposeAIMessageMode.Style] in
-        var result: [TelegramComposeAIMessageMode.Style] = []
-        if let data = currentAppConfiguration(transaction: transaction).data, let value = data["ai_compose_styles"] as? [[String]] {
-            for item in value {
-                if item.count >= 3 {
-                    let emojiFileId: Int64? = Int64(item[1])
-                    result.append(TelegramComposeAIMessageMode.Style(type: item[0], title: item[2], emojiFileId: emojiFileId))
-                }
-            }
-        }
-        #if DEBUG && false
-        for item in Array(result) {
-            result.append(TelegramComposeAIMessageMode.Style(name: item.name + "_", emoji: item.emoji))
-        }
-        #endif
-        return result
-    }
-}
-
-public enum TelegramAIComposeMessageError {
-    case generic
-    case nonPremiumFlood
-}
-
-func _internal_composeAIMessage(account: Account, text: TextWithEntities, mode: TelegramComposeAIMessageMode) -> Signal<TelegramAIComposeMessageResult, TelegramAIComposeMessageError> {
-    var flags: Int32 = 0
-    var translateToLang: String?
-    var changeTone: String?
-    switch mode {
-    case let .translate(toLanguage, emojify, style):
-        translateToLang = toLanguage
-        flags |= (1 << 1)
-        
-        if emojify {
-            flags |= (1 << 3)
-        }
-        
-        if case let .style(name) = style {
-            changeTone = name
-            flags |= (1 << 2)
-        }
-    case let .stylize(emojify, style):
-        if emojify {
-            flags |= (1 << 3)
-        }
-        
-        if case let .style(name) = style {
-            changeTone = name
-            flags |= (1 << 2)
-        }
-    case .proofread:
-        flags |= (1 << 0)
-    }
-    
-    let inputText: Api.TextWithEntities = .textWithEntities(Api.TextWithEntities.Cons_textWithEntities(text: text.text, entities: apiEntitiesFromMessageTextEntities(text.entities, associatedPeers: SimpleDictionary())))
-    
-    return account.network.request(Api.functions.messages.composeMessageWithAI(flags: flags, text: inputText, translateToLang: translateToLang, changeTone: changeTone))
-    |> `catch` { error -> Signal<Api.messages.ComposedMessageWithAI, TelegramAIComposeMessageError> in
-        if error.errorDescription == "AICOMPOSE_FLOOD_PREMIUM" {
-            return .fail(.nonPremiumFlood)
-        } else {
-            return .fail(.generic)
-        }
-    }
-    |> mapToSignal { result -> Signal<TelegramAIComposeMessageResult, TelegramAIComposeMessageError> in
-        switch result {
-        case let .composedMessageWithAI(composedMessageWithAI):
-            var diffRanges: [Range<Int>] = []
-            if let diffText = composedMessageWithAI.diffText {
-                switch diffText {
-                case let .textWithEntities(textWithEntities):
-                    for entity in textWithEntities.entities {
-                        switch entity {
-                        case let .messageEntityDiffReplace(messageEntityDiffReplace):
-                            if messageEntityDiffReplace.length >= 0 {
-                                diffRanges.append(Int(messageEntityDiffReplace.offset) ..< Int(messageEntityDiffReplace.offset + messageEntityDiffReplace.length))
-                            }
-                        case let .messageEntityDiffInsert(messageEntityDiffInsert):
-                            if messageEntityDiffInsert.length >= 0 {
-                                diffRanges.append(Int(messageEntityDiffInsert.offset) ..< Int(messageEntityDiffInsert.offset + messageEntityDiffInsert.length))
-                            }
-                        default:
-                            break
-                        }
-                    }
-                }
-            }
-            return .single(TelegramAIComposeMessageResult(
-                text: TextWithEntities(apiValue: composedMessageWithAI.resultText),
-                diffRanges: diffRanges
-            ))
-        }
     }
 }
