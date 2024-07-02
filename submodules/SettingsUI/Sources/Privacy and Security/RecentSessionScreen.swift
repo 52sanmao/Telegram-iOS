@@ -1,3 +1,4 @@
+import BuildConfig
 import Foundation
 import UIKit
 import Display
@@ -260,9 +261,15 @@ private final class RecentSessionSheetContent: CombinedComponent {
                 }
                 var appVersion = session.appVersion
                 appVersion = appVersion.replacingOccurrences(of: "APPSTORE", with: "").replacingOccurrences(of: "BETA", with: "Beta").trimmingTrailingSpaces()
+                // MARK: Swiftgram
+                var apiId: String = ""
+                if buildConfig.apiId != session.apiId {
+                    apiId = "\napi_id: \(session.apiId)"
+                }
+                //
                 applicationTitle = strings.AuthSessions_View_Application
-                applicationString =  "\(session.appName) \(appVersion)"
-                ipString = nil
+                applicationString =  "\(session.appName) \(appVersion)\(apiId)" // MARK: Swiftgram
+                ipString = session.ip // MARK: Swiftgram
                 locationString = session.country
                 
                 buttonString = !session.isCurrent ? strings.AuthSessions_View_TerminateSession : nil
