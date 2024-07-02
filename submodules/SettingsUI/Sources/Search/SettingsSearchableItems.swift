@@ -4311,6 +4311,12 @@ func settingsSearchableItems(
     activeSessionsContext: Signal<ActiveSessionsContext?, NoError> = .single(nil),
     webSessionsContext: Signal<WebSessionsContext?, NoError> = .single(nil)
 ) -> Signal<[SettingsSearchableItem], NoError> {
+
+    // MARK: Swiftgram
+    let watchAppInstalled = (context.watchManager?.watchAppInstalled ?? .single(false))
+    |> take(1)
+    //
+
     let canAddAccount = activeAccountsAndPeers(context: context)
     |> take(1)
     |> map { accountsAndPeers -> Bool in
@@ -4405,6 +4411,7 @@ func settingsSearchableItems(
     }
     
     return combineLatest(
+        watchAppInstalled, // MARK: Swiftgram
         canAddAccount,
         localizations,
         notificationSettings,
@@ -4418,6 +4425,7 @@ func settingsSearchableItems(
         activeWebSessionsContext
     )
     |> map {
+        watchAppInstalled, // MARK: Swiftgram
         canAddAccount,
         localizations,
         notificationSettings,
@@ -4486,7 +4494,14 @@ func settingsSearchableItems(
         
         let storiesItems = myProfileSearchableItems(context: context)
         allItems.append(contentsOf: storiesItems)
-        
+        // MARK: Swiftgram
+        if watchAppInstalled {
+            let watch = SettingsSearchableItem(id: "watch", title: strings.Settings_AppleWatch, alternate: synonyms(strings.SettingsSearch_Synonyms_Watch), icon: .watch, breadcrumbs: [], present: { context, _, present in
+                present(.push, watchSettingsController(context: context))
+            })
+            allItems.append(watch)
+        }
+        //
         if let hasTwoStepAuth = hasTwoStepAuth,
            hasTwoStepAuth {
             let passport = SettingsSearchableItem(
