@@ -703,7 +703,7 @@ func infoItems(nearestChatParticipant: (String?, Int32?), showProfileId: Bool, d
                 
                 if case .broadcast = channel.info {
                     var canEditMembers = false
-                    if channel.hasPermission(.banMembers) {
+                    if channel.adminRights != nil || channel.flags.contains(.isCreator) { // MARK: Swiftgram
                         canEditMembers = true
                     }
                     if canEditMembers {
@@ -1392,7 +1392,7 @@ func editingItems(data: PeerInfoScreenData?, boostStatus: ChannelBoostStatus?, s
                 }
                 
                 var canEditMembers = false
-                if channel.hasPermission(.banMembers) && (channel.adminRights != nil || channel.flags.contains(.isCreator)) {
+                if /*channel.hasPermission(.banMembers) &&*/ (channel.adminRights != nil || channel.flags.contains(.isCreator)) { // MARK: Swiftgram
                     canEditMembers = true
                 }
                 if canEditMembers {
