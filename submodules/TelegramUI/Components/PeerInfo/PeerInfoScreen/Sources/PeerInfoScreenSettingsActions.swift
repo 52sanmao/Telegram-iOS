@@ -1,3 +1,4 @@
+import SGSettingsUI
 import Foundation
 import UIKit
 import Display
@@ -44,6 +45,18 @@ extension PeerInfoScreenNode {
             }
         }
         switch section {
+        case .swiftgram:
+            self.controller?.push(sgSettingsController(context: self.context))
+        case .swiftgramPro:
+            if self.context.sharedContext.immediateSGStatus.status > 1 {
+                self.controller?.push(self.context.sharedContext.makeSGProController(context: self.context))
+            } else {
+                if let payWallController = self.context.sharedContext.makeSGPayWallController(context: self.context) {
+                    self.controller?.present(payWallController, in: .window(.root), with: ViewControllerPresentationArguments(presentationAnimation: .modalSheet))
+                } else {
+                    self.controller?.present(self.context.sharedContext.makeSGUpdateIOSController(), animated: true)
+                }
+            }
         case .avatar:
             self.controller?.openAvatarForEditing()
         case .edit:

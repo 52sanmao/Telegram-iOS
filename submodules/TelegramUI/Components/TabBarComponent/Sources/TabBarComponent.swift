@@ -648,7 +648,7 @@ public final class TabBarComponent: Component {
                 totalItemsWidth = total
             }
 
-            let itemHeight: CGFloat = 56.0
+            let itemHeight: CGFloat = (SGSimpleSettings.shared.showTabNames ? 56.0 : 40.0)
             let contentWidth: CGFloat = innerInset * 2.0 + totalItemsWidth
             let tabsSize = CGSize(width: min(availableSize.width, contentWidth), height: itemHeight + innerInset * 2.0)
 
@@ -789,7 +789,7 @@ public final class TabBarComponent: Component {
             } else if let selectionFrame {
                 lensSelection = (selectionFrame.minX - innerInset, selectionFrame.width + innerInset * 2.0)
             } else {
-                lensSelection = (0.0, 56.0)
+                lensSelection = (0.0, (SGSimpleSettings.shared.showTabNames ? 56.0 : 40.0))
             }
 
             var lensSize: CGSize = tabsSize

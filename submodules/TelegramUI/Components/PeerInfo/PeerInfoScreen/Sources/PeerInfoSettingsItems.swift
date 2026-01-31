@@ -20,6 +20,8 @@ enum SettingsSection: Int, CaseIterable {
     case accounts
     case myProfile
     case proxy
+    case swiftgram
+    case swiftgramPro
     case apps
     case shortcuts
     case advanced
