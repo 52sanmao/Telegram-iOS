@@ -4147,7 +4147,7 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
         }
     }
         
-    private func openParticipantsSection(section: PeerInfoParticipantsSection) {
+    public func openParticipantsSection(section: PeerInfoParticipantsSection) { // MARK: Swiftgram
         guard let data = self.data, let peer = data.peer else {
             return
         }
