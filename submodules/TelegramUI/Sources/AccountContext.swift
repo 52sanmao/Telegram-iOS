@@ -908,7 +908,7 @@ public final class AccountContextImpl: AccountContext {
         }
         if SGSimpleSettings.shared.confirmCalls {
             let presentationData = self.sharedContext.currentPresentationData.with { $0 }
-            self.sharedContext.mainWindow?.present(textAlertController(context: self, title: nil, text: isVideo ? i18n("CallConfirmation.Video.Title", presentationData.strings.baseLanguageCode) : i18n("CallConfirmation.Audio.Title", presentationData.strings.baseLanguageCode), actions: [TextAlertAction(type: .defaultAction, title: presentationData.strings.Common_No, action: {}), TextAlertAction(type: .genericAction, title: presentationData.strings.Common_Yes, action: { [weak self] in
+            self.sharedContext.mainWindow?.present(textAlertController(context: self, title: nil, text: isVideo ? i18n("CallConfirmation.Video.Title", presentationData.strings.baseLanguageCode) : i18n("CallConfirmation.Audio.Title", presentationData.strings.baseLanguageCode), actions: [TextAlertAction(type: .genericAction, title: presentationData.strings.Common_No, action: {}), TextAlertAction(type: .destructiveAction, title: presentationData.strings.Common_Yes, action: { [weak self] in
                 guard let _ = self else {
                     return
                 }
