@@ -3442,7 +3442,10 @@ extension AppDelegate {
             SGLogger.shared.log("SGIAP", "Asking user id \(userId) to keep connection: true")
             primaryContext.account.network.shouldKeepConnection.set(.single(true))
         }
-        let iqtpResponse = try? await sgIqtpQuery(engine: primaryContext.engine, query: makeIqtpQuery(0, "s")).awaitable()
+        // MARK: Swiftgram
+        let sgIqtpQueryString = makeIqtpQuery("s")
+        //
+        let iqtpResponse = try? await sgIqtpQuery(engine: primaryContext.engine, query: sgIqtpQueryString).awaitable()
         guard let iqtpResponse = iqtpResponse else {
             SGLogger.shared.log("SGIAP", "IQTP response is nil!")
 //            if !currentShouldKeepConnection {
@@ -3459,7 +3462,7 @@ extension AppDelegate {
             var value = value
 
             let newStatus: Int64
-            if let description = iqtpResponse.description, let status = Int64(description) {
+            if let status = Int64(iqtpResponse.value) {
                 newStatus = status
             } else {
                 SGLogger.shared.log("SGIAP", "Can't parse IQTP response into status!")
