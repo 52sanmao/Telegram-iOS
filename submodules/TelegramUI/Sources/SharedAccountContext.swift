@@ -1110,8 +1110,20 @@ public final class SharedAccountContextImpl: SharedAccountContext {
         self.callPeerDisposable?.dispose()
     }
     
+    // MARK: Swiftgram
+    var didPerformSGUISettingsMigration = false
+    //
+    // MARK: Swiftgram
+    func sgPrimaryAccountContextForMigration() -> AccountContext? {
+        return self.activeAccountsValue?.primary
+    }
+    //
     private var didPerformAccountSettingsImport = false
+    
     private func performAccountSettingsImportIfNecessary() {
+        // MARK: Swiftgram
+        self.performSGUISettingsMigrationIfNecessary()
+        //
         if self.didPerformAccountSettingsImport {
             return
         }

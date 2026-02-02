@@ -139,7 +139,7 @@ private struct SGSettingsControllerState: Equatable {
 
 private typealias SGControllerEntry = SGItemListUIEntry<SGControllerSection, SGBoolSetting, SGSliderSetting, SGOneFromManySetting, SGDisclosureLink, AnyHashable>
 
-private func SGControllerEntries(presentationData: PresentationData, callListSettings: CallListSettings, experimentalUISettings: ExperimentalUISettings, SGSettings: SGUISettings, appConfiguration: AppConfiguration, nameColors: PeerNameColors, state: SGSettingsControllerState) -> [SGControllerEntry] {
+private func SGControllerEntries(presentationData: PresentationData, callListSettings: CallListSettings, experimentalUISettings: ExperimentalUISettings, appConfiguration: AppConfiguration, nameColors: PeerNameColors, state: SGSettingsControllerState) -> [SGControllerEntry] {
     
     let lang = presentationData.strings.baseLanguageCode
     let strings = presentationData.strings
@@ -193,7 +193,7 @@ private func SGControllerEntries(presentationData: PresentationData, callListSet
     entries.append(.toggle(id: id.count, section: .chatList, settingName: .disableDeleteChatSwipeOption, value: !SGSimpleSettings.shared.disableDeleteChatSwipeOption, text: i18n("Settings.DeleteChatSwipeOption", lang), enabled: !SGSimpleSettings.shared.disableChatSwipeOptions))
     
     entries.append(.header(id: id.count, section: .profiles, text: i18n("Settings.Profiles.Header", lang), badge: nil))
-    entries.append(.toggle(id: id.count, section: .profiles, settingName: .showProfileId, value: SGSettings.showProfileId, text: i18n("Settings.ShowProfileID", lang), enabled: true))
+    entries.append(.toggle(id: id.count, section: .profiles, settingName: .showProfileId, value: SGSimpleSettings.shared.showProfileId, text: i18n("Settings.ShowProfileID", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .profiles, settingName: .showDC, value: SGSimpleSettings.shared.showDC, text: i18n("Settings.ShowDC", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .profiles, settingName: .showRegDate, value: SGSimpleSettings.shared.showRegDate, text: i18n("Settings.ShowRegDate", lang), enabled: true))
     entries.append(.notice(id: id.count, section: .profiles, text: i18n("Settings.ShowRegDate.Notice", lang)))
@@ -203,9 +203,9 @@ private func SGControllerEntries(presentationData: PresentationData, callListSet
     entries.append(.notice(id: id.count, section: .profiles, text: i18n("Settings.CallConfirmation.Notice", lang)))
     
     entries.append(.header(id: id.count, section: .stories, text: strings.AutoDownloadSettings_Stories.uppercased(), badge: nil))
-    entries.append(.toggle(id: id.count, section: .stories, settingName: .hideStories, value: SGSettings.hideStories, text: i18n("Settings.Stories.Hide", lang), enabled: true))
+    entries.append(.toggle(id: id.count, section: .stories, settingName: .hideStories, value: SGSimpleSettings.shared.hideStories, text: i18n("Settings.Stories.Hide", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .stories, settingName: .disableSwipeToRecordStory, value: SGSimpleSettings.shared.disableSwipeToRecordStory, text: i18n("Settings.Stories.DisableSwipeToRecord", lang), enabled: true))
-    entries.append(.toggle(id: id.count, section: .stories, settingName: .warnOnStoriesOpen, value: SGSettings.warnOnStoriesOpen, text: i18n("Settings.Stories.WarnBeforeView", lang), enabled: true))
+    entries.append(.toggle(id: id.count, section: .stories, settingName: .warnOnStoriesOpen, value: SGSimpleSettings.shared.warnOnStoriesOpen, text: i18n("Settings.Stories.WarnBeforeView", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .stories, settingName: .showRepostToStory, value: SGSimpleSettings.shared.showRepostToStoryV2, text: strings.Share_RepostToStory.replacingOccurrences(of: "\n", with: " "), enabled: true))
     if SGSimpleSettings.shared.canUseStealthMode {
         entries.append(.toggle(id: id.count, section: .stories, settingName: .storyStealthMode, value: SGSimpleSettings.shared.storyStealthMode, text: strings.Story_StealthMode_Title, enabled: true))
@@ -320,7 +320,7 @@ private func SGControllerEntries(presentationData: PresentationData, callListSet
     entries.append(.toggle(id: id.count, section: .other, settingName: .uploadSpeedBoost, value: SGSimpleSettings.shared.uploadSpeedBoost, text: i18n("Settings.UploadsBoost", lang), enabled: true))
     entries.append(.oneFromManySelector(id: id.count, section: .other, settingName: .downloadSpeedBoost, text: i18n("Settings.DownloadsBoost", lang), value: i18n("Settings.DownloadsBoost.\(SGSimpleSettings.shared.downloadSpeedBoost)", lang), enabled: true))
     entries.append(.notice(id: id.count, section: .other, text: i18n("Settings.DownloadsBoost.Notice", lang)))
-    entries.append(.toggle(id: id.count, section: .other, settingName: .sendWithReturnKey, value: SGSettings.sendWithReturnKey, text: i18n("Settings.SendWithReturnKey", lang), enabled: true))
+    entries.append(.toggle(id: id.count, section: .other, settingName: .sendWithReturnKey, value: SGSimpleSettings.shared.sendWithReturnKey, text: i18n("Settings.SendWithReturnKey", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .other, settingName: .forceEmojiTab, value: SGSimpleSettings.shared.forceEmojiTab, text: i18n("Settings.ForceEmojiTab", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .other, settingName: .defaultEmojisFirst, value: SGSimpleSettings.shared.defaultEmojisFirst, text: i18n("Settings.DefaultEmojisFirst", lang), enabled: true))
     entries.append(.notice(id: id.count, section: .other, text: i18n("Settings.DefaultEmojisFirst.Notice", lang)))
@@ -397,37 +397,13 @@ public func sgSettingsController(context: AccountContext/*, focusOnItemTag: Int?
         case .startTelescopeWithRearCam:
             SGSimpleSettings.shared.startTelescopeWithRearCam = value
         case .hideStories:
-            let _ = (
-                updateSGUISettings(engine: context.engine, { settings in
-                    var settings = settings
-                    settings.hideStories = value
-                    return settings
-                })
-            ).start()
+            SGSimpleSettings.shared.hideStories = value
         case .showProfileId:
-            let _ = (
-                updateSGUISettings(engine: context.engine, { settings in
-                    var settings = settings
-                    settings.showProfileId = value
-                    return settings
-                })
-            ).start()
+            SGSimpleSettings.shared.showProfileId = value
         case .warnOnStoriesOpen:
-            let _ = (
-                updateSGUISettings(engine: context.engine, { settings in
-                    var settings = settings
-                    settings.warnOnStoriesOpen = value
-                    return settings
-                })
-            ).start()
+            SGSimpleSettings.shared.warnOnStoriesOpen = value
         case .sendWithReturnKey:
-            let _ = (
-                updateSGUISettings(engine: context.engine, { settings in
-                    var settings = settings
-                    settings.sendWithReturnKey = value
-                    return settings
-                })
-            ).start()
+            SGSimpleSettings.shared.sendWithReturnKey = value
         case .rememberLastFolder:
             SGSimpleSettings.shared.rememberLastFolder = value
         case .sendLargePhotos:
@@ -720,7 +696,7 @@ public func sgSettingsController(context: AccountContext/*, focusOnItemTag: Int?
     })
     
     let sharedData = context.sharedContext.accountManager.sharedData(keys: [ApplicationSpecificSharedDataKeys.callListSettings, ApplicationSpecificSharedDataKeys.experimentalUISettings])
-    let preferences = context.account.postbox.preferencesView(keys: [ApplicationSpecificPreferencesKeys.SGUISettings, PreferencesKeys.appConfiguration])
+    let preferences = context.account.postbox.preferencesView(keys: [PreferencesKeys.appConfiguration])
     let updatedContentSettingsConfiguration = contentSettingsConfiguration(network: context.account.network)
     |> map(Optional.init)
     let contentSettingsConfiguration = Promise<ContentSettingsConfiguration?>()
@@ -733,12 +709,11 @@ public func sgSettingsController(context: AccountContext/*, focusOnItemTag: Int?
     )
     |> map { _, /*sliderValue,*/ state, presentationData, sharedData, view, contentSettingsConfiguration, availableReplyColors, availableProfileColors ->  (ItemListControllerState, (ItemListNodeState, Any)) in
         
-        let sgUISettings: SGUISettings = view.values[ApplicationSpecificPreferencesKeys.SGUISettings]?.get(SGUISettings.self) ?? SGUISettings.default
         let appConfiguration: AppConfiguration = view.values[PreferencesKeys.appConfiguration]?.get(AppConfiguration.self) ?? AppConfiguration.defaultValue
         let callListSettings: CallListSettings = sharedData.entries[ApplicationSpecificSharedDataKeys.callListSettings]?.get(CallListSettings.self) ?? CallListSettings.defaultSettings
         let experimentalUISettings: ExperimentalUISettings = sharedData.entries[ApplicationSpecificSharedDataKeys.experimentalUISettings]?.get(ExperimentalUISettings.self) ?? ExperimentalUISettings.defaultSettings
         
-        let entries = SGControllerEntries(presentationData: presentationData, callListSettings: callListSettings, experimentalUISettings: experimentalUISettings, SGSettings: sgUISettings, appConfiguration: appConfiguration, nameColors: PeerNameColors.with(availableReplyColors: availableReplyColors, availableProfileColors: availableProfileColors), state: state)
+        let entries = SGControllerEntries(presentationData: presentationData, callListSettings: callListSettings, experimentalUISettings: experimentalUISettings, appConfiguration: appConfiguration, nameColors: PeerNameColors.with(availableReplyColors: availableReplyColors, availableProfileColors: availableProfileColors), state: state)
         
         let controllerState = ItemListControllerState(presentationData: ItemListPresentationData(presentationData), title: .text("Swiftgram"), leftNavigationButton: nil, rightNavigationButton: nil, backNavigationButton: ItemListBackButton(title: presentationData.strings.Common_Back))
         

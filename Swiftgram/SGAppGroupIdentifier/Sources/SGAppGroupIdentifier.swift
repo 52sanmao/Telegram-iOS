@@ -2,7 +2,7 @@ import Foundation
 
 public let FALLBACK_BASE_BUNDLE_ID: String = "app.swiftgram.ios"
 
-public func sgAppGroupIdentifier() -> String {
+public func sgBaseBundleIdentifier() -> String {
     let baseBundleId: String
     if let bundleId: String = Bundle.main.bundleIdentifier {
         if Bundle.main.bundlePath.hasSuffix(".appex") {
@@ -17,8 +17,11 @@ public func sgAppGroupIdentifier() -> String {
     } else {
         baseBundleId = FALLBACK_BASE_BUNDLE_ID
     }
-    
-    let result: String = "group.\(baseBundleId)"
+    return baseBundleId
+}
+
+public func sgAppGroupIdentifier() -> String {
+    let result: String = "group.\(sgBaseBundleIdentifier())"
     
     #if DEBUG
     print("APP_GROUP_IDENTIFIER: \(result)")

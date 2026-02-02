@@ -157,6 +157,10 @@ public class SGSimpleSettings {
         case nyStyle
         case wideTabBar
         case tabBarSearchEnabled
+        case hideStories
+        case warnOnStoriesOpen
+        case showProfileId
+        case sendWithReturnKey
     }
     
     public enum DownloadSpeedBoostValues: String, CaseIterable {
@@ -296,7 +300,11 @@ public class SGSimpleSettings {
         Keys.canUseNY.rawValue: false,
         Keys.nyStyle.rawValue: NYStyle.default.rawValue,
         Keys.wideTabBar.rawValue: false,
-        Keys.tabBarSearchEnabled.rawValue: true
+        Keys.tabBarSearchEnabled.rawValue: true,
+        Keys.hideStories.rawValue: false,
+        Keys.warnOnStoriesOpen.rawValue: false,
+        Keys.showProfileId.rawValue: true,
+        Keys.sendWithReturnKey.rawValue: false
     ]
     
     public static let groupDefaultValues: [String: Any] = [
@@ -347,6 +355,12 @@ public class SGSimpleSettings {
     
     @UserDefault(key: Keys.outgoingPhotoQuality.rawValue)
     public var outgoingPhotoQuality: Int32
+
+    @UserDefault(key: Keys.hideStories.rawValue)
+    public var hideStories: Bool
+
+    @UserDefault(key: Keys.warnOnStoriesOpen.rawValue)
+    public var warnOnStoriesOpen: Bool
     
     @UserDefault(key: Keys.storyStealthMode.rawValue)
     public var storyStealthMode: Bool
@@ -440,6 +454,9 @@ public class SGSimpleSettings {
     
     @UserDefault(key: Keys.hideTabBar.rawValue)
     public var hideTabBar: Bool
+
+    @UserDefault(key: Keys.showProfileId.rawValue)
+    public var showProfileId: Bool
     
     @UserDefault(key: Keys.showDC.rawValue)
     public var showDC: Bool
@@ -509,6 +526,9 @@ public class SGSimpleSettings {
     
     @UserDefault(key: Keys.inputToolbar.rawValue)
     public var inputToolbar: Bool
+
+    @UserDefault(key: Keys.sendWithReturnKey.rawValue)
+    public var sendWithReturnKey: Bool
     
     @UserDefault(key: Keys.pinnedMessageNotifications.rawValue, userDefaults: UserDefaults(suiteName: APP_GROUP_IDENTIFIER) ?? .standard)
     public var pinnedMessageNotifications: String

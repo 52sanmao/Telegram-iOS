@@ -9,6 +9,7 @@ sgdeps = [
     "//Swiftgram/SGSettingsUI:SGSettingsUI",
     "//Swiftgram/SGConfig:SGConfig",
     "//Swiftgram/SGAPIWebSettings:SGAPIWebSettings",
+    "//Swiftgram/SGAppGroupIdentifier:SGAppGroupIdentifier",
     "//Swiftgram/SGSimpleSettings:SGSimpleSettings",
     "//Swiftgram/SFSafariViewControllerPlus:SFSafariViewControllerPlus",
     "//Swiftgram/SGLogging:SGLogging",
@@ -29,7 +30,8 @@ sgdeps = [
 sgsrcs = [
     "//Swiftgram/SGDBReset:SGDBReset",
     "//Swiftgram/SGShowMessageJson:SGShowMessageJson",
-    "//Swiftgram/ChatControllerImplExtension:ChatControllerImplExtension"
+    "//Swiftgram/ChatControllerImplExtension:ChatControllerImplExtension",
+    "//Swiftgram/SGSharedAccountContextMigration:SGSharedAccountContextMigration"
 ]
 
 filegroup(

@@ -272,7 +272,7 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
     
     private(set) var validLayout: (ContainerViewLayout, CGFloat)?
     private(set) var nearestChatParticipant: (String?, Int32?) = (nil, nil)
-    private(set) var showProfileId: Bool = SGUISettings.default.showProfileId
+    private(set) var showProfileId: Bool = SGSimpleSettings.shared.showProfileId // MARK: Swiftgram
     private(set) var data: PeerInfoScreenData?
     
     var state = PeerInfoState(
@@ -2471,13 +2471,6 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
             self?.updateNavigation(transition: .immediate, additive: true, animateHeader: true)
         }
         
-        // MARK: Swiftgram
-        let showProfileIdSignal = self.context.account.postbox.preferencesView(keys: [ApplicationSpecificPreferencesKeys.SGUISettings])
-        |> map { view -> Bool in
-            let settings: SGUISettings = view.values[ApplicationSpecificPreferencesKeys.SGUISettings]?.get(SGUISettings.self) ?? .default
-            return settings.showProfileId
-        }
-        |> distinctUntilChanged
         let nearestChatParticipantSignal = .single((nil, nil)) |> then(self.fetchNearestChatParticipant()) |> distinctUntilChanged { lhs, rhs in
             if lhs.0 != rhs.0 {
                 return false
@@ -2491,15 +2484,16 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
         self.dataDisposable = combineLatest(
             queue: Queue.mainQueue(),
             nearestChatParticipantSignal,
-            showProfileIdSignal,
             screenData,
             self.forceIsContactPromise.get()
-        ).startStrict(next: { [weak self] nearestChatParticipant, showProfileId, data, forceIsContact in
+        ).startStrict(next: { [weak self] nearestChatParticipant, data, forceIsContact in
             guard let strongSelf = self else {
                 return
             }
+            // MARK: Swiftgram
+            strongSelf.showProfileId = SGSimpleSettings.shared.showProfileId
+            //
             strongSelf.nearestChatParticipant = nearestChatParticipant
-            strongSelf.showProfileId = showProfileId
             if data.isContact && forceIsContact {
                 strongSelf.forceIsContactPromise.set(false)
             } else {

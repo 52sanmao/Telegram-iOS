@@ -2148,12 +2148,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                 self.storiesReady.set(.single(true))
             } else {
                 // MARK: Swiftgram
-                let hideStoriesSignal = self.context.account.postbox.preferencesView(keys: [ApplicationSpecificPreferencesKeys.SGUISettings])
-                |> map { view -> Bool in
-                    let settings: SGUISettings = view.values[ApplicationSpecificPreferencesKeys.SGUISettings]?.get(SGUISettings.self) ?? .default
-                    return settings.hideStories
-                }
-                |> distinctUntilChanged
+                let hideStoriesSignal = sgSimpleSettingsBoolSignal(.hideStories, defaultValue: false)
                 
                 self.storySubscriptionsDisposable = (combineLatest(self.context.engine.messages.storySubscriptions(isHidden: self.location == .chatList(groupId: .archive)), hideStoriesSignal)
                 |> deliverOnMainQueue).startStrict(next: { [weak self] rawStorySubscriptions, hideStories in
@@ -6713,12 +6708,7 @@ private final class ChatListLocationContext {
         })
         
         // MARK: Swiftgram
-        let hideStoriesSignal = context.account.postbox.preferencesView(keys: [ApplicationSpecificPreferencesKeys.SGUISettings])
-        |> map { view -> Bool in
-            let settings: SGUISettings = view.values[ApplicationSpecificPreferencesKeys.SGUISettings]?.get(SGUISettings.self) ?? .default
-            return settings.hideStories
-        }
-        |> distinctUntilChanged
+        let hideStoriesSignal = sgSimpleSettingsBoolSignal(.hideStories, defaultValue: false)
         
         let passcode = context.sharedContext.accountManager.accessChallengeData()
         |> map { view -> (Bool, Bool) in

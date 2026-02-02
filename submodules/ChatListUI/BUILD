@@ -6,6 +6,7 @@ sgdeps = [
     "//Swiftgram/SGAPIToken:SGAPIToken"
 ]
 sgsrcs = [
+    "//Swiftgram/SGChatListSimpleSettingsSignal:SGChatListSimpleSettingsSignal",
 ]
 
 swift_library(

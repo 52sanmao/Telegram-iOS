@@ -432,7 +432,7 @@ private final class StoryContainerScreenComponent: Component {
         private var pendingNavigationToItemId: StoryId?
         
         private let storiesWarning = ComponentView<Empty>()
-        private var requestedDisplayStoriesWarning: Bool = SGUISettings.default.warnOnStoriesOpen
+        private var requestedDisplayStoriesWarning: Bool = SGSimpleSettings.shared.warnOnStoriesOpen // MARK: Swiftgram
         private var displayStoriesWarningDisposable: Disposable?
         private var isDisplayingStoriesWarning: Bool = false
         
@@ -1328,26 +1328,14 @@ private final class StoryContainerScreenComponent: Component {
                 })
                 
                 // MARK: Swiftgram
-                let warnOnStoriesOpenSignal = component.context.account.postbox.preferencesView(keys: [ApplicationSpecificPreferencesKeys.SGUISettings])
-                |> map { view -> Bool in
-                    let settings: SGUISettings = view.values[ApplicationSpecificPreferencesKeys.SGUISettings]?.get(SGUISettings.self) ?? .default
-                    return settings.warnOnStoriesOpen
+                self.requestedDisplayStoriesWarning = SGSimpleSettings.shared.warnOnStoriesOpen
+                if self.requestedDisplayStoriesWarning {
+                    self.isDisplayingStoriesWarning = true
+                    if update {
+                        self.state?.updated(transition: .immediate)
+                    }
                 }
-                |> distinctUntilChanged
-                
-                self.displayStoriesWarningDisposable = (warnOnStoriesOpenSignal
-                |> deliverOnMainQueue).startStrict(next: { [weak self] value in
-                    guard let self else {
-                        return
-                    }
-                    self.requestedDisplayStoriesWarning = value
-                    if self.requestedDisplayStoriesWarning {
-                        self.isDisplayingStoriesWarning = true
-                        if update {
-                            self.state?.updated(transition: .immediate)
-                        }
-                    }
-                })
+                //
                 
                 update = true
             }
