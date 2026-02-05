@@ -30,6 +30,7 @@
 
 "Settings.ChatList.Header" = "CHAT LIST";
 "Settings.CompactChatList" = "Compact Chat List";
+"Settings.OneLineChatList" = "One-line Chat List";
 
 "Settings.Profiles.Header" = "PROFILES";
 

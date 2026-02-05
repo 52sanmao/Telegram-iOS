@@ -27,6 +27,7 @@
 
 "Settings.ChatList.Header" = "對話列表";
 "Settings.CompactChatList" = "緊湊型對話列表";
+"Settings.OneLineChatList" = "單行對話列表";
 
 "Settings.Profiles.Header" = "配置文件";
 

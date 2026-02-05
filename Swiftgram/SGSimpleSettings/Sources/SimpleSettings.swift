@@ -46,6 +46,7 @@ public class SGSimpleSettings {
             { let _ = self.hideTabBar },
             { let _ = self.bottomTabStyle },
             { let _ = self.compactChatList },
+            { let _ = self.oneLineChatList },
             { let _ = self.compactFolderNames },
             { let _ = self.disableSwipeToRecordStory },
             { let _ = self.rememberLastFolder },
@@ -127,6 +128,7 @@ public class SGSimpleSettings {
         case showRegDate
         case regDateCache
         case compactChatList
+        case oneLineChatList
         case compactFolderNames
         case allChatsTitleLengthOverride
 //        case allChatsFolderPositionOverride
@@ -276,6 +278,7 @@ public class SGSimpleSettings {
         Keys.showRegDate.rawValue: true,
         Keys.regDateCache.rawValue: [:],
         Keys.compactChatList.rawValue: false,
+        Keys.oneLineChatList.rawValue: false,
         Keys.compactFolderNames.rawValue: false,
         Keys.allChatsTitleLengthOverride.rawValue: AllChatsTitleLengthOverride.none.rawValue,
 //        Keys.allChatsFolderPositionOverride.rawValue: AllChatsFolderPositionOverride.none.rawValue
@@ -471,6 +474,9 @@ public class SGSimpleSettings {
     
     @UserDefault(key: Keys.compactChatList.rawValue)
     public var compactChatList: Bool
+
+    @UserDefault(key: Keys.oneLineChatList.rawValue)
+    public var oneLineChatList: Bool
 
     @UserDefault(key: Keys.compactFolderNames.rawValue)
     public var compactFolderNames: Bool

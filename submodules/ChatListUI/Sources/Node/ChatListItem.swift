@@ -2174,6 +2174,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
         
         // MARK: Swiftgram
         let sgCompactChatList = SGSimpleSettings.shared.compactChatList
+        let sgOneLineChatList = SGSimpleSettings.shared.oneLineChatList
         
         return { item, params, first, last, firstWithHeader, nextIsPinned in
             let titleFont = Font.medium(floor(item.presentationData.fontSize.itemListBaseFontSize * 16.0 / 17.0))
@@ -2504,7 +2505,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     hideAuthor = true
             }
             // MARK: Swiftgram
-            if sgCompactChatList { hideAuthor = true };
+            let sgInlineAuthorPrefix = sgOneLineChatList && !hideAuthor
+            if sgCompactChatList || sgOneLineChatList { hideAuthor = true };
             var attributedText: NSAttributedString
             var hasDraft = false
             
@@ -2533,7 +2535,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                 }
             }
             // MARK: Swiftgram
-            if sgCompactChatList { useInlineAuthorPrefix = true };
+            if sgCompactChatList || sgInlineAuthorPrefix { useInlineAuthorPrefix = true };
             if useInlineAuthorPrefix {
                 if case let .user(author) = messages.last?.author {
                     if author.id == item.context.account.peerId {
@@ -3598,7 +3600,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                 textMaxWidth -= 18.0
             }
             
-            let (textLayout, textApply) = textLayout(TextNodeLayoutArguments(attributedString: textAttributedString, backgroundColor: nil, maximumNumberOfLines: (authorAttributedString == nil && itemTags.isEmpty && forumThread == nil && topForumTopicItems.isEmpty && !sgCompactChatList) ? 2 : 1, truncationType: .end, constrainedSize: CGSize(width: textMaxWidth, height: CGFloat.greatestFiniteMagnitude), alignment: .natural, cutout: textCutout, insets: UIEdgeInsets(top: 2.0, left: 1.0, bottom: 2.0, right: 1.0)))
+            // MARK: Swiftgram
+            let (textLayout, textApply) = textLayout(TextNodeLayoutArguments(attributedString: textAttributedString, backgroundColor: nil, maximumNumberOfLines: (authorAttributedString == nil && itemTags.isEmpty && forumThread == nil && topForumTopicItems.isEmpty && !sgCompactChatList && !sgOneLineChatList) ? 2 : 1, truncationType: .end, constrainedSize: CGSize(width: textMaxWidth, height: CGFloat.greatestFiniteMagnitude), alignment: .natural, cutout: textCutout, insets: UIEdgeInsets(top: 2.0, left: 1.0, bottom: 2.0, right: 1.0)))
             
             let maxTitleLines: Int
             switch item.index {
@@ -4445,7 +4448,10 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     
                     let authorNodeFrame = CGRect(origin: CGPoint(x: contentRect.origin.x - 1.0, y: contentRect.minY + titleLayout.size.height), size: authorLayout)
                     strongSelf.authorNode.frame = authorNodeFrame
-                    let textNodeFrame = CGRect(origin: CGPoint(x: contentRect.origin.x - 1.0, y: contentRect.minY + titleLayout.size.height - 1.0 + UIScreenPixel + (authorLayout.height.isZero ? 0.0 : (authorLayout.height - 3.0))), size: textLayout.size)
+                    // MARK: Swiftgram
+                    let sgOneLineTextOffset: CGFloat = (sgOneLineChatList && !sgCompactChatList && authorLayout.height.isZero) ? floorToScreenPixels(2.0 * sizeFactor) : 0.0
+                    //
+                    let textNodeFrame = CGRect(origin: CGPoint(x: contentRect.origin.x - 1.0, y: contentRect.minY + titleLayout.size.height - 1.0 + UIScreenPixel + (authorLayout.height.isZero ? 0.0 : (authorLayout.height - 3.0)) + sgOneLineTextOffset), size: textLayout.size)
                     
                     if let topForumTopicRect, !isSearching {
                         let compoundHighlightingNode: LinkHighlightingNode
