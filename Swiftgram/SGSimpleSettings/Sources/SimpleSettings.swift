@@ -34,6 +34,19 @@ public class SGSimpleSettings {
         } else {
             SGLogger.shared.log("SGSimpleSettings", "Unable to migrate showRepostToStory. Shared UserDefaults suite is not available for '\(APP_GROUP_IDENTIFIER)'.")
         }
+
+        let chatListLinesMigrationKey = "migrated_\(Keys.chatListLines.rawValue)"
+        if !UserDefaults.standard.bool(forKey: chatListLinesMigrationKey) {
+            let legacyOneLineChatListKey = "oneLineChatList"
+            if UserDefaults.standard.object(forKey: legacyOneLineChatListKey) != nil {
+                if UserDefaults.standard.bool(forKey: legacyOneLineChatListKey) {
+                    self.chatListLines = ChatListLines.one.rawValue
+                }
+                UserDefaults.standard.removeObject(forKey: legacyOneLineChatListKey)
+                SGLogger.shared.log("SGSimpleSettings", "Migrated oneLineChatList -> chatListLines. \(self.chatListLines)")
+            }
+            UserDefaults.standard.set(true, forKey: chatListLinesMigrationKey)
+        }
     }
     
     private func preCacheValues() {
@@ -46,7 +59,7 @@ public class SGSimpleSettings {
             { let _ = self.hideTabBar },
             { let _ = self.bottomTabStyle },
             { let _ = self.compactChatList },
-            { let _ = self.oneLineChatList },
+            { let _ = self.chatListLines },
             { let _ = self.compactFolderNames },
             { let _ = self.disableSwipeToRecordStory },
             { let _ = self.rememberLastFolder },
@@ -128,7 +141,7 @@ public class SGSimpleSettings {
         case showRegDate
         case regDateCache
         case compactChatList
-        case oneLineChatList
+        case chatListLines
         case compactFolderNames
         case allChatsTitleLengthOverride
 //        case allChatsFolderPositionOverride
@@ -186,6 +199,14 @@ public class SGSimpleSettings {
         case none
         case last
         case hidden
+    }
+
+    public enum ChatListLines: String, CaseIterable {
+        case three = "3"
+        case two = "2"
+        case one = "1"
+
+        public static let defaultValue: ChatListLines = .three
     }
     
     public enum MessageDoubleTapAction: String, CaseIterable {
@@ -278,7 +299,7 @@ public class SGSimpleSettings {
         Keys.showRegDate.rawValue: true,
         Keys.regDateCache.rawValue: [:],
         Keys.compactChatList.rawValue: false,
-        Keys.oneLineChatList.rawValue: false,
+        Keys.chatListLines.rawValue: ChatListLines.defaultValue.rawValue,
         Keys.compactFolderNames.rawValue: false,
         Keys.allChatsTitleLengthOverride.rawValue: AllChatsTitleLengthOverride.none.rawValue,
 //        Keys.allChatsFolderPositionOverride.rawValue: AllChatsFolderPositionOverride.none.rawValue
@@ -475,8 +496,8 @@ public class SGSimpleSettings {
     @UserDefault(key: Keys.compactChatList.rawValue)
     public var compactChatList: Bool
 
-    @UserDefault(key: Keys.oneLineChatList.rawValue)
-    public var oneLineChatList: Bool
+    @UserDefault(key: Keys.chatListLines.rawValue)
+    public var chatListLines: String
 
     @UserDefault(key: Keys.compactFolderNames.rawValue)
     public var compactFolderNames: Bool

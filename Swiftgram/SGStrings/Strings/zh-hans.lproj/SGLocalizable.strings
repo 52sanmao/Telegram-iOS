@@ -27,7 +27,10 @@
 
 "Settings.ChatList.Header" = "对话列表";
 "Settings.CompactChatList" = "紧凑型对话列表";
-"Settings.OneLineChatList" = "单行对话列表";
+"Settings.ChatList.Lines" = "对话列表行数";
+"Settings.ChatList.Lines.1" = "1 行";
+"Settings.ChatList.Lines.2" = "2 行";
+"Settings.ChatList.Lines.3" = "3 行（默认）";
 
 "Settings.Profiles.Header" = "资料";
 
