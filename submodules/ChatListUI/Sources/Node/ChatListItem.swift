@@ -4374,7 +4374,12 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                         var actionButtonSize = CGSize(width: actionButtonTitleNodeLayout.size.width + actionButtonSideInset * 2.0, height: actionButtonTitleNodeLayout.size.height + actionButtonTopInset + actionButtonBottomInset)
                         // MARK: Swiftgram
                         let sgActionButtonScaleDivisor: CGFloat = sgCompactChatList ? 1.5 : 1.0
-                        actionButtonSize.width = max(actionButtonSize.width / sgActionButtonScaleDivisor, actionButtonTitleNodeLayout.size.width + actionButtonSideInset * 2.0 / sgActionButtonScaleDivisor)
+                        if sgCompactChatList {
+                            let sgCompactActionButtonSideInset = floor(item.presentationData.fontSize.itemListBaseFontSize * 3.0 / 17.0)
+                            actionButtonSize.width = max(actionButtonSize.width / sgActionButtonScaleDivisor, actionButtonTitleNodeLayout.size.width + sgCompactActionButtonSideInset * 2.0)
+                        } else {
+                            actionButtonSize.width = actionButtonSize.width / sgActionButtonScaleDivisor
+                        }
                         actionButtonSize.height = actionButtonSize.height / sgActionButtonScaleDivisor
                         //
                         var actionButtonFrame = CGRect(x: nextBadgeX - actionButtonSize.width, y: contentRect.minY + floor((contentRect.height - actionButtonSize.height) * 0.5), width: actionButtonSize.width, height: actionButtonSize.height)
@@ -4414,7 +4419,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                         
                         actionButtonNode.frame = actionButtonFrame
                         actionButtonBackgroundView.frame = CGRect(origin: CGPoint(), size: actionButtonFrame.size)
-                        actionButtonTitleNode.frame = CGRect(origin: CGPoint(x: floorToScreenPixels((actionButtonFrame.width - actionButtonTitleNodeLayout.size.width) * 0.5), y: actionButtonTopInset / (sgCompactChatList ? 1.5 : 1.0)), size: actionButtonTitleNodeLayout.size)
+                        let sgActionButtonTitleYOffset: CGFloat = sgCompactChatList ? floorToScreenPixels(1.0 * sizeFactor) : 0.0
+                        actionButtonTitleNode.frame = CGRect(origin: CGPoint(x: floorToScreenPixels(max(0.0, (actionButtonFrame.width - actionButtonTitleNodeLayout.size.width) * 0.5)), y: floorToScreenPixels((actionButtonFrame.height - actionButtonTitleNodeLayout.size.height) * 0.5 + sgActionButtonTitleYOffset)), size: actionButtonTitleNodeLayout.size)
                         
                         nextBadgeX -= actionButtonSize.width + 6.0
                     } else {
