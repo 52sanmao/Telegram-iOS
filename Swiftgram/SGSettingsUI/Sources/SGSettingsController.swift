@@ -90,6 +90,7 @@ private enum SGBoolSetting: String {
     case showCreationDate
     case showRegDate
     case compactChatList
+    case oneLineChatList
     case compactFolderNames
     case allChatsHidden
     case defaultEmojisFirst
@@ -111,7 +112,6 @@ private enum SGOneFromManySetting: String {
     case nyStyle
     case bottomTabStyle
     case downloadSpeedBoost
-    case chatListLines
     case allChatsTitleLengthOverride
 //    case allChatsFolderPositionOverride
     case translationBackend
@@ -190,7 +190,7 @@ private func SGControllerEntries(presentationData: PresentationData, callListSet
     
     entries.append(.header(id: id.count, section: .chatList, text: i18n("Settings.ChatList.Header", lang), badge: nil))
     entries.append(.toggle(id: id.count, section: .chatList, settingName: .compactChatList, value: SGSimpleSettings.shared.compactChatList, text: i18n("Settings.CompactChatList", lang), enabled: true))
-    entries.append(.oneFromManySelector(id: id.count, section: .chatList, settingName: .chatListLines, text: i18n("Settings.ChatList.Lines", lang), value: i18n("Settings.ChatList.Lines.\(SGSimpleSettings.shared.chatListLines)", lang), enabled: true))
+    entries.append(.toggle(id: id.count, section: .chatList, settingName: .oneLineChatList, value: SGSimpleSettings.shared.chatListLines != SGSimpleSettings.ChatListLines.three.rawValue, text: i18n("Settings.OneLineChatList", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .chatList, settingName: .disableChatSwipeOptions, value: !SGSimpleSettings.shared.disableChatSwipeOptions, text: i18n("Settings.ChatSwipeOptions", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .chatList, settingName: .disableDeleteChatSwipeOption, value: !SGSimpleSettings.shared.disableDeleteChatSwipeOption, text: i18n("Settings.DeleteChatSwipeOption", lang), enabled: !SGSimpleSettings.shared.disableChatSwipeOptions))
     
@@ -479,6 +479,9 @@ public func sgSettingsController(context: AccountContext/*, focusOnItemTag: Int?
         case .compactChatList:
             SGSimpleSettings.shared.compactChatList = value
             askForRestart?()
+        case .oneLineChatList:
+            SGSimpleSettings.shared.chatListLines = value ? SGSimpleSettings.ChatListLines.one.rawValue : SGSimpleSettings.ChatListLines.three.rawValue
+            askForRestart?()
         case .compactFolderNames:
             SGSimpleSettings.shared.compactFolderNames = value
             askForRestart?()
@@ -544,19 +547,6 @@ public func sgSettingsController(context: AccountContext/*, focusOnItemTag: Int?
         var items: [ActionSheetItem] = []
         
         switch (setting) {
-            case .chatListLines:
-                let setAction: (String) -> Void = { value in
-                    SGSimpleSettings.shared.chatListLines = value
-                    simplePromise.set(true)
-                    askForRestart?()
-                }
-
-                for value in SGSimpleSettings.ChatListLines.allCases {
-                    items.append(ActionSheetButtonItem(title: i18n("Settings.ChatList.Lines.\(value.rawValue)", presentationData.strings.baseLanguageCode), color: .accent, action: { [weak actionSheet] in
-                        actionSheet?.dismissAnimated()
-                        setAction(value.rawValue)
-                    }))
-                }
             case .downloadSpeedBoost:
                 let setAction: (String) -> Void = { value in
                     SGSimpleSettings.shared.downloadSpeedBoost = value
