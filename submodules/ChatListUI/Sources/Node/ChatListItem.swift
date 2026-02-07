@@ -4373,8 +4373,9 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                         
                         var actionButtonSize = CGSize(width: actionButtonTitleNodeLayout.size.width + actionButtonSideInset * 2.0, height: actionButtonTitleNodeLayout.size.height + actionButtonTopInset + actionButtonBottomInset)
                         // MARK: Swiftgram
-                        actionButtonSize.width = actionButtonSize.width / (sgCompactChatList ? 1.5 : 1.0)
-                        actionButtonSize.height = actionButtonSize.height / (sgCompactChatList ? 1.5 : 1.0)
+                        let sgActionButtonScaleDivisor: CGFloat = sgCompactChatList ? 1.5 : 1.0
+                        actionButtonSize.width = max(actionButtonSize.width / sgActionButtonScaleDivisor, actionButtonTitleNodeLayout.size.width + actionButtonSideInset * 2.0 / sgActionButtonScaleDivisor)
+                        actionButtonSize.height = actionButtonSize.height / sgActionButtonScaleDivisor
                         //
                         var actionButtonFrame = CGRect(x: nextBadgeX - actionButtonSize.width, y: contentRect.minY + floor((contentRect.height - actionButtonSize.height) * 0.5), width: actionButtonSize.width, height: actionButtonSize.height)
                         actionButtonFrame.origin.y = max(actionButtonFrame.origin.y, dateFrame.maxY + floor(item.presentationData.fontSize.itemListBaseFontSize * 4.0 / 17.0))
