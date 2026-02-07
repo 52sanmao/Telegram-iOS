@@ -1782,6 +1782,21 @@ final class ChatListControllerNode: ASDisplayNode, ASGestureRecognizerDelegate {
         storiesInset = navigationBarLayout.storiesInset
         
         self.containerLayout = (layout, navigationBarHeight, visualNavigationHeight, cleanNavigationBarHeight, storiesInset)
+
+        // MARK: Swiftgram
+        let sgComponentTransition = ComponentTransition(transition)
+        let sgDisplayTabsAtBottom = self.controller?.tabContainerData?.1 ?? false
+        let sgShouldDisplayBottomFolders = sgDisplayTabsAtBottom && self.isSearchDisplayControllerActive == nil
+        let sgFoldersSize = self.sgFoldersView.update(
+            transition: sgComponentTransition,
+            component: AnyComponent(HeaderPanelContainerComponent(
+                theme: self.presentationData.theme,
+                tabs: navigationBarLayout.tabs,
+                panels: []
+            )),
+            environment: {},
+            containerSize: layout.size
+        )
         
         var insets = layout.insets(options: [.input])
         insets.top += navigationBarHeight
@@ -1835,6 +1850,11 @@ final class ChatListControllerNode: ASDisplayNode, ASGestureRecognizerDelegate {
             transition.updateAlpha(node: toolbarNode, alpha: 0.0, completion: { [weak toolbarNode] _ in
                 toolbarNode?.removeFromSupernode()
             })
+        }
+
+        // MARK: Swiftgram
+        if sgShouldDisplayBottomFolders && sgFoldersSize.height > 0.0 {
+            insets.bottom += sgFoldersSize.height + 16.0 + 8.0
         }
         
         var childrenLayout = layout
@@ -1902,25 +1922,8 @@ final class ChatListControllerNode: ASDisplayNode, ASGestureRecognizerDelegate {
         }
         
         // MARK: Swiftgram
-        let componentTransition = ComponentTransition(transition)
-        let sgFoldersSize = self.sgFoldersView.update(
-            transition: ComponentTransition(transition),
-            component: AnyComponent(HeaderPanelContainerComponent(
-                theme: self.presentationData.theme,
-                tabs: navigationBarLayout.tabs,
-                panels: []
-            )),
-            environment: {},
-            containerSize: layout.size
-        )
         if let sgFoldersView = self.sgFoldersView.view as? HeaderPanelContainerComponent.View {
-            let displayTabsAtBottom: Bool
-            if let tabContainerData = self.controller?.tabContainerData {
-                displayTabsAtBottom = tabContainerData.1
-            } else {
-                displayTabsAtBottom = false
-            }
-            if displayTabsAtBottom && self.isSearchDisplayControllerActive == nil {
+            if sgShouldDisplayBottomFolders && sgFoldersSize.height > 0.0 {
                 if sgFoldersView.superview == nil {
                     self.view.addSubview(sgFoldersView)
                     if transition.isAnimated {
@@ -1944,7 +1947,7 @@ final class ChatListControllerNode: ASDisplayNode, ASGestureRecognizerDelegate {
 //                }
                 //
                 // TODO(swiftgram):
-                componentTransition.setFrame(view: sgFoldersView, frame: CGRect(origin: CGPoint(x: 0.0, y: layout.size.height - bottomInset - sgFoldersSize.height - 16.0), size: sgFoldersSize))
+                sgComponentTransition.setFrame(view: sgFoldersView, frame: CGRect(origin: CGPoint(x: 0.0, y: layout.size.height - bottomInset - sgFoldersSize.height - 16.0), size: sgFoldersSize))
             } else {
                 sgFoldersView.layer.animateAlpha(from: 1.0, to: 0.0, duration: 0.2, removeOnCompletion: false, completion: { [weak sgFoldersView] _ in
                     sgFoldersView?.removeFromSuperview()
