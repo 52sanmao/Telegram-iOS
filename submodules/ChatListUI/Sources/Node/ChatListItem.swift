@@ -4651,8 +4651,11 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     
                     if !itemTags.isEmpty {
                         let sizeFactor = item.presentationData.fontSize.itemListBaseFontSize / 17.0
+                        // MARK: Swiftgram
+                        let sgCompactMessagePreviewTagListOffset = max(0.0, SGCompactMessagePreviewLayout.textBlockOffset(sizeFactor: sizeFactor, compactMessagePreview: sgCompactMessagePreview, compactChatList: sgCompactChatList, hasAuthorLine: false) - floorToScreenPixels(4.0 * sizeFactor))
+                        //
                         
-                        let itemTagListFrame = CGRect(origin: CGPoint(x: contentRect.minX, y: contentRect.minY + measureLayout.size.height * 2.0 + floorToScreenPixels(2.0 * sizeFactor)), size: CGSize(width: contentRect.width, height: floorToScreenPixels(20.0 * sizeFactor)))
+                        let itemTagListFrame = CGRect(origin: CGPoint(x: contentRect.minX, y: contentRect.minY + measureLayout.size.height * 2.0 + floorToScreenPixels(2.0 * sizeFactor) + sgCompactMessagePreviewTagListOffset), size: CGSize(width: contentRect.width, height: floorToScreenPixels(20.0 * sizeFactor)))
                         
                         var itemTagListTransition = transition
                         let itemTagList: ComponentView<Empty>

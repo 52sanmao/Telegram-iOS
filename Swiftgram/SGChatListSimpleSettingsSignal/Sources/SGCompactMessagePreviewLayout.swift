@@ -52,4 +52,9 @@ enum SGCompactMessagePreviewLayout {
         }
         return floorToScreenPixels(6.0 * sizeFactor)
     }
+
+    static func textBlockOffset(sizeFactor: CGFloat, compactMessagePreview: Bool, compactChatList: Bool, hasAuthorLine: Bool) -> CGFloat {
+        textVerticalOffset(sizeFactor: sizeFactor, compactMessagePreview: compactMessagePreview, compactChatList: compactChatList, hasAuthorLine: hasAuthorLine)
+        + titleTextSpacing(sizeFactor: sizeFactor, compactMessagePreview: compactMessagePreview, compactChatList: compactChatList, hasAuthorLine: hasAuthorLine)
+    }
 }
