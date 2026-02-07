@@ -1759,8 +1759,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
         }
         // MARK: Swiftgram
         let sgCompactChatList = SGSimpleSettings.shared.compactChatList
-        let sgCompactMessagePreview = (SGSimpleSettings.ChatListLines(rawValue: SGSimpleSettings.shared.chatListLines) ?? .three) != .three
-        let sgAvatarScaleDivisor: CGFloat = sgCompactChatList ? 1.5 : (sgCompactMessagePreview ? 1.1 : 1.0)
+        let sgCompactMessagePreview = SGCompactMessagePreviewLayout.isEnabled()
+        let sgAvatarScaleDivisor: CGFloat = SGCompactMessagePreviewLayout.avatarScaleDivisor(compactChatList: sgCompactChatList, compactMessagePreview: sgCompactMessagePreview)
         var peer: EnginePeer?
         var displayAsMessage = false
         var enablePreview = true
@@ -2176,8 +2176,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
         
         // MARK: Swiftgram
         let sgCompactChatList = SGSimpleSettings.shared.compactChatList
-        let sgCompactMessagePreview = (SGSimpleSettings.ChatListLines(rawValue: SGSimpleSettings.shared.chatListLines) ?? .three) != .three
-        let sgAvatarScaleDivisor: CGFloat = sgCompactChatList ? 1.5 : (sgCompactMessagePreview ? 1.1 : 1.0)
+        let sgCompactMessagePreview = SGCompactMessagePreviewLayout.isEnabled()
+        let sgAvatarScaleDivisor: CGFloat = SGCompactMessagePreviewLayout.avatarScaleDivisor(compactChatList: sgCompactChatList, compactMessagePreview: sgCompactMessagePreview)
         
         return { item, params, first, last, firstWithHeader, nextIsPinned in
             let titleFont = Font.medium(floor(item.presentationData.fontSize.itemListBaseFontSize * 16.0 / 17.0))
@@ -4336,17 +4336,17 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     
                     // MARK: Swiftgram
                     let sizeFactor = item.presentationData.fontSize.itemListBaseFontSize / 17.0
-                    let sgOneLineBadgeOffset: CGFloat = (sgCompactMessagePreview && !sgCompactChatList) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
+                    let sgCompactMessagePreviewBadgeOffset = SGCompactMessagePreviewLayout.badgeOffset(sizeFactor: sizeFactor, compactMessagePreview: sgCompactMessagePreview, compactChatList: sgCompactChatList)
 
                     var nextBadgeX: CGFloat = contentRect.maxX
                     if let _ = currentBadgeBackgroundImage {
-                        let badgeFrame = CGRect(x: nextBadgeX - badgeLayout.width, y: contentRect.maxY - badgeLayout.height - 2.0 + (sgCompactChatList ? 13.0 / sizeFactor : 0.0) - sgOneLineBadgeOffset, width: badgeLayout.width, height: badgeLayout.height)
+                        let badgeFrame = CGRect(x: nextBadgeX - badgeLayout.width, y: contentRect.maxY - badgeLayout.height - 2.0 + (sgCompactChatList ? 13.0 / sizeFactor : 0.0) - sgCompactMessagePreviewBadgeOffset, width: badgeLayout.width, height: badgeLayout.height)
                         
                         transition.updateFrame(node: strongSelf.badgeNode, frame: badgeFrame)
                         nextBadgeX -= badgeLayout.width + 6.0
                     }
                     if currentMentionBadgeImage != nil || currentBadgeBackgroundImage != nil {
-                        let badgeFrame = CGRect(x: nextBadgeX - mentionBadgeLayout.width, y: contentRect.maxY - mentionBadgeLayout.height - 2.0 + (sgCompactChatList ? 13.0 / sizeFactor : 0.0) - sgOneLineBadgeOffset, width: mentionBadgeLayout.width, height: mentionBadgeLayout.height)
+                        let badgeFrame = CGRect(x: nextBadgeX - mentionBadgeLayout.width, y: contentRect.maxY - mentionBadgeLayout.height - 2.0 + (sgCompactChatList ? 13.0 / sizeFactor : 0.0) - sgCompactMessagePreviewBadgeOffset, width: mentionBadgeLayout.width, height: mentionBadgeLayout.height)
                         
                         transition.updateFrame(node: strongSelf.mentionBadgeNode, frame: badgeFrame)
                         nextBadgeX -= mentionBadgeLayout.width + 6.0
@@ -4357,7 +4357,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                         strongSelf.pinnedIconNode.isHidden = false
                         
                         let pinnedIconSize = currentPinnedIconImage.size
-                        let pinnedIconFrame = CGRect(x: nextBadgeX - pinnedIconSize.width, y: contentRect.maxY - pinnedIconSize.height - 2.0 + (sgCompactChatList ? 13.0 / sizeFactor : 0.0) - sgOneLineBadgeOffset, width: pinnedIconSize.width, height: pinnedIconSize.height)
+                        let pinnedIconFrame = CGRect(x: nextBadgeX - pinnedIconSize.width, y: contentRect.maxY - pinnedIconSize.height - 2.0 + (sgCompactChatList ? 13.0 / sizeFactor : 0.0) - sgCompactMessagePreviewBadgeOffset, width: pinnedIconSize.width, height: pinnedIconSize.height)
                         
                         strongSelf.pinnedIconNode.frame = pinnedIconFrame
                         nextBadgeX -= pinnedIconSize.width + 6.0
@@ -4461,15 +4461,15 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     
                     let contentDelta = CGPoint(x: contentRect.origin.x - (strongSelf.titleNode.frame.minX - titleOffset), y: contentRect.origin.y - (strongSelf.titleNode.frame.minY - UIScreenPixel))
                     // MARK: Swiftgram
-                    let sgOneLineVerticalOffset: CGFloat = (sgCompactMessagePreview && !sgCompactChatList && authorLayout.height.isZero) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
-                    let sgOneLineTitleTextSpacing: CGFloat = (sgCompactMessagePreview && !sgCompactChatList && authorLayout.height.isZero) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
+                    let sgCompactMessagePreviewVerticalOffset: CGFloat = SGCompactMessagePreviewLayout.textVerticalOffset(sizeFactor: sizeFactor, compactMessagePreview: sgCompactMessagePreview, compactChatList: sgCompactChatList, hasAuthorLine: !authorLayout.height.isZero)
+                    let sgCompactMessagePreviewTitleTextSpacing: CGFloat = SGCompactMessagePreviewLayout.titleTextSpacing(sizeFactor: sizeFactor, compactMessagePreview: sgCompactMessagePreview, compactChatList: sgCompactChatList, hasAuthorLine: !authorLayout.height.isZero)
                     //
-                    let titleFrame = CGRect(origin: CGPoint(x: contentRect.origin.x + titleOffset, y: contentRect.origin.y + UIScreenPixel + sgOneLineVerticalOffset), size: titleLayout.size)
+                    let titleFrame = CGRect(origin: CGPoint(x: contentRect.origin.x + titleOffset, y: contentRect.origin.y + UIScreenPixel + sgCompactMessagePreviewVerticalOffset), size: titleLayout.size)
                     strongSelf.titleNode.frame = titleFrame
                     
-                    let authorNodeFrame = CGRect(origin: CGPoint(x: contentRect.origin.x - 1.0, y: contentRect.minY + titleLayout.size.height + sgOneLineVerticalOffset), size: authorLayout)
+                    let authorNodeFrame = CGRect(origin: CGPoint(x: contentRect.origin.x - 1.0, y: contentRect.minY + titleLayout.size.height + sgCompactMessagePreviewVerticalOffset), size: authorLayout)
                     strongSelf.authorNode.frame = authorNodeFrame
-                    let textNodeFrame = CGRect(origin: CGPoint(x: contentRect.origin.x - 1.0, y: contentRect.minY + titleLayout.size.height - 1.0 + UIScreenPixel + (authorLayout.height.isZero ? 0.0 : (authorLayout.height - 3.0)) + sgOneLineVerticalOffset + sgOneLineTitleTextSpacing), size: textLayout.size)
+                    let textNodeFrame = CGRect(origin: CGPoint(x: contentRect.origin.x - 1.0, y: contentRect.minY + titleLayout.size.height - 1.0 + UIScreenPixel + (authorLayout.height.isZero ? 0.0 : (authorLayout.height - 3.0)) + sgCompactMessagePreviewVerticalOffset + sgCompactMessagePreviewTitleTextSpacing), size: textLayout.size)
                     
                     if let topForumTopicRect, !isSearching {
                         let compoundHighlightingNode: LinkHighlightingNode
