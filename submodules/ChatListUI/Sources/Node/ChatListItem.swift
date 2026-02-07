@@ -3799,6 +3799,16 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                 peerRevealOptions = []
                 peerLeftRevealOptions = []
             }
+            // MARK: Swiftgram
+            if sgCompactChatList {
+                peerRevealOptions = peerRevealOptions.map { option in
+                    ItemListRevealOption(key: option.key, title: option.title, icon: .none, color: option.color, textColor: option.textColor)
+                }
+                peerLeftRevealOptions = peerLeftRevealOptions.map { option in
+                    ItemListRevealOption(key: option.key, title: option.title, icon: .none, color: option.color, textColor: option.textColor)
+                }
+            }
+            //
             
             let (onlineLayout, onlineApply) = onlineLayout(online, onlineIsVoiceChat)
             var animateContent = false
