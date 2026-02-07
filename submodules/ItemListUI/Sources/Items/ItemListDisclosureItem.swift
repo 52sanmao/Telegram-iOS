@@ -63,6 +63,7 @@ public class ItemListDisclosureItem: ListViewItem, ItemListItem, ListItemCompone
     let label: String
     let attributedLabel: NSAttributedString?
     let labelStyle: ItemListDisclosureLabelStyle
+    let sgLabelMaximumNumberOfLines: Int
     let centerLabelAlignment: Bool
     let additionalDetailLabel: String?
     let additionalDetailLabelColor: ItemListDisclosureItemDetailLabelColor
@@ -75,7 +76,7 @@ public class ItemListDisclosureItem: ListViewItem, ItemListItem, ListItemCompone
     public let tag: ItemListItemTag?
     public let shimmeringIndex: Int?
     
-    public init(presentationData: ItemListPresentationData, systemStyle: ItemListSystemStyle = .legacy, icon: UIImage? = nil, context: AccountContext? = nil, iconPeer: EnginePeer? = nil, title: String, attributedTitle: NSAttributedString? = nil, enabled: Bool = true, titleColor: ItemListDisclosureItemTitleColor = .primary, titleFont: ItemListDisclosureItemTitleFont = .regular, titleIcon: UIImage? = nil, titleBadge: String? = nil, label: String, attributedLabel: NSAttributedString? = nil, labelStyle: ItemListDisclosureLabelStyle = .text, centerLabelAlignment: Bool = false, additionalDetailLabel: String? = nil, additionalDetailLabelColor: ItemListDisclosureItemDetailLabelColor = .generic, sectionId: ItemListSectionId, style: ItemListStyle, disclosureStyle: ItemListDisclosureStyle = .arrow, noInsets: Bool = false, action: (() -> Void)?, clearHighlightAutomatically: Bool = true, tag: ItemListItemTag? = nil, shimmeringIndex: Int? = nil) {
+    public init(presentationData: ItemListPresentationData, systemStyle: ItemListSystemStyle = .legacy, icon: UIImage? = nil, context: AccountContext? = nil, iconPeer: EnginePeer? = nil, title: String, attributedTitle: NSAttributedString? = nil, enabled: Bool = true, titleColor: ItemListDisclosureItemTitleColor = .primary, titleFont: ItemListDisclosureItemTitleFont = .regular, titleIcon: UIImage? = nil, titleBadge: String? = nil, label: String, attributedLabel: NSAttributedString? = nil, labelStyle: ItemListDisclosureLabelStyle = .text, sgLabelMaximumNumberOfLines: Int = 1, centerLabelAlignment: Bool = false, additionalDetailLabel: String? = nil, additionalDetailLabelColor: ItemListDisclosureItemDetailLabelColor = .generic, sectionId: ItemListSectionId, style: ItemListStyle, disclosureStyle: ItemListDisclosureStyle = .arrow, noInsets: Bool = false, action: (() -> Void)?, clearHighlightAutomatically: Bool = true, tag: ItemListItemTag? = nil, shimmeringIndex: Int? = nil) {
         self.presentationData = presentationData
         self.systemStyle = systemStyle
         self.icon = icon
@@ -89,6 +90,7 @@ public class ItemListDisclosureItem: ListViewItem, ItemListItem, ListItemCompone
         self.titleBadge = titleBadge
         self.enabled = enabled
         self.labelStyle = labelStyle
+        self.sgLabelMaximumNumberOfLines = sgLabelMaximumNumberOfLines
         self.label = label
         self.attributedLabel = attributedLabel
         self.centerLabelAlignment = centerLabelAlignment
@@ -449,12 +451,15 @@ public class ItemListDisclosureItemNode: ListViewItemNode, ItemListItemNode {
                 labelBadgeColor = item.presentationData.theme.list.itemSecondaryTextColor
                 labelFont = defaultLabelFont
             }
-            var multilineLabel = false
+            // MARK: Swiftgram
+            let labelMaximumNumberOfLines: Int
             if case .multilineDetailText = item.labelStyle {
-                multilineLabel = true
+                labelMaximumNumberOfLines = 0
+            } else {
+                labelMaximumNumberOfLines = max(1, item.sgLabelMaximumNumberOfLines)
             }
-            
-            let (labelLayout, labelApply) = makeLabelLayout(TextNodeLayoutArguments(attributedString: item.attributedLabel ?? NSAttributedString(string: item.label, font: labelFont, textColor: labelBadgeColor), backgroundColor: nil, maximumNumberOfLines: multilineLabel ? 0 : 1, truncationType: .end, constrainedSize: CGSize(width: labelConstrain, height: CGFloat.greatestFiniteMagnitude), alignment: .natural, cutout: nil, insets: UIEdgeInsets()))
+            //
+            let (labelLayout, labelApply) = makeLabelLayout(TextNodeLayoutArguments(attributedString: item.attributedLabel ?? NSAttributedString(string: item.label, font: labelFont, textColor: labelBadgeColor), backgroundColor: nil, maximumNumberOfLines: labelMaximumNumberOfLines, truncationType: .end, constrainedSize: CGSize(width: labelConstrain, height: CGFloat.greatestFiniteMagnitude), alignment: .natural, cutout: nil, insets: UIEdgeInsets()))
             
             var additionalDetailLabelInfo: (TextNodeLayout, () -> TextNode)?
             if let additionalDetailLabel = item.additionalDetailLabel {
@@ -508,7 +513,9 @@ public class ItemListDisclosureItemNode: ListViewItemNode, ItemListItemNode {
             case .detailText, .multilineDetailText:
                 height = verticalInset * 2.0 + titleLayout.size.height + titleSpacing + labelLayout.size.height
             default:
-                height = verticalInset * 2.0 + titleLayout.size.height
+                // MARK: Swiftgram
+                height = verticalInset * 2.0 + max(titleLayout.size.height, labelLayout.size.height)
+                //
             }
             if let additionalDetailLabelInfo = additionalDetailLabelInfo {
                 height += titleSpacing + additionalDetailLabelInfo.0.size.height
