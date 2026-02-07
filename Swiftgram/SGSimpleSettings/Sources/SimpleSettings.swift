@@ -37,13 +37,13 @@ public class SGSimpleSettings {
 
         let chatListLinesMigrationKey = "migrated_\(Keys.chatListLines.rawValue)"
         if !UserDefaults.standard.bool(forKey: chatListLinesMigrationKey) {
-            let legacyOneLineChatListKey = "oneLineChatList"
-            if UserDefaults.standard.object(forKey: legacyOneLineChatListKey) != nil {
-                if UserDefaults.standard.bool(forKey: legacyOneLineChatListKey) {
+            let legacyCompactMessagePreviewKey = "compactMessagePreview"
+            if UserDefaults.standard.object(forKey: legacyCompactMessagePreviewKey) != nil {
+                if UserDefaults.standard.bool(forKey: legacyCompactMessagePreviewKey) {
                     self.chatListLines = ChatListLines.one.rawValue
                 }
-                UserDefaults.standard.removeObject(forKey: legacyOneLineChatListKey)
-                SGLogger.shared.log("SGSimpleSettings", "Migrated oneLineChatList -> chatListLines. \(self.chatListLines)")
+                UserDefaults.standard.removeObject(forKey: legacyCompactMessagePreviewKey)
+                SGLogger.shared.log("SGSimpleSettings", "Migrated compactMessagePreview -> chatListLines. \(self.chatListLines)")
             }
             UserDefaults.standard.set(true, forKey: chatListLinesMigrationKey)
         }

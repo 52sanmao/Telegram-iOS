@@ -1759,8 +1759,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
         }
         // MARK: Swiftgram
         let sgCompactChatList = SGSimpleSettings.shared.compactChatList
-        let sgOneLineChatList = (SGSimpleSettings.ChatListLines(rawValue: SGSimpleSettings.shared.chatListLines) ?? .three) != .three
-        let sgAvatarScaleDivisor: CGFloat = sgCompactChatList ? 1.5 : (sgOneLineChatList ? 1.1 : 1.0)
+        let sgCompactMessagePreview = (SGSimpleSettings.ChatListLines(rawValue: SGSimpleSettings.shared.chatListLines) ?? .three) != .three
+        let sgAvatarScaleDivisor: CGFloat = sgCompactChatList ? 1.5 : (sgCompactMessagePreview ? 1.1 : 1.0)
         var peer: EnginePeer?
         var displayAsMessage = false
         var enablePreview = true
@@ -2176,8 +2176,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
         
         // MARK: Swiftgram
         let sgCompactChatList = SGSimpleSettings.shared.compactChatList
-        let sgOneLineChatList = (SGSimpleSettings.ChatListLines(rawValue: SGSimpleSettings.shared.chatListLines) ?? .three) != .three
-        let sgAvatarScaleDivisor: CGFloat = sgCompactChatList ? 1.5 : (sgOneLineChatList ? 1.1 : 1.0)
+        let sgCompactMessagePreview = (SGSimpleSettings.ChatListLines(rawValue: SGSimpleSettings.shared.chatListLines) ?? .three) != .three
+        let sgAvatarScaleDivisor: CGFloat = sgCompactChatList ? 1.5 : (sgCompactMessagePreview ? 1.1 : 1.0)
         
         return { item, params, first, last, firstWithHeader, nextIsPinned in
             let titleFont = Font.medium(floor(item.presentationData.fontSize.itemListBaseFontSize * 16.0 / 17.0))
@@ -2508,8 +2508,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     hideAuthor = true
             }
             // MARK: Swiftgram
-            let sgInlineAuthorPrefix = sgOneLineChatList && !hideAuthor
-            if sgCompactChatList || sgOneLineChatList { hideAuthor = true };
+            let sgInlineAuthorPrefix = sgCompactMessagePreview && !hideAuthor
+            if sgCompactChatList || sgCompactMessagePreview { hideAuthor = true };
             var attributedText: NSAttributedString
             var hasDraft = false
             
@@ -3605,7 +3605,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
             
             // MARK: Swiftgram
             let sgChatListMaxLines: Int
-            if sgOneLineChatList {
+            if sgCompactMessagePreview {
                 sgChatListMaxLines = 1
             } else {
                 sgChatListMaxLines = (authorAttributedString == nil && itemTags.isEmpty && forumThread == nil && topForumTopicItems.isEmpty && !sgCompactChatList) ? 2 : 1
@@ -4336,7 +4336,7 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     
                     // MARK: Swiftgram
                     let sizeFactor = item.presentationData.fontSize.itemListBaseFontSize / 17.0
-                    let sgOneLineBadgeOffset: CGFloat = (sgOneLineChatList && !sgCompactChatList) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
+                    let sgOneLineBadgeOffset: CGFloat = (sgCompactMessagePreview && !sgCompactChatList) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
 
                     var nextBadgeX: CGFloat = contentRect.maxX
                     if let _ = currentBadgeBackgroundImage {
@@ -4461,8 +4461,8 @@ public class ChatListItemNode: ItemListRevealOptionsItemNode {
                     
                     let contentDelta = CGPoint(x: contentRect.origin.x - (strongSelf.titleNode.frame.minX - titleOffset), y: contentRect.origin.y - (strongSelf.titleNode.frame.minY - UIScreenPixel))
                     // MARK: Swiftgram
-                    let sgOneLineVerticalOffset: CGFloat = (sgOneLineChatList && !sgCompactChatList && authorLayout.height.isZero) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
-                    let sgOneLineTitleTextSpacing: CGFloat = (sgOneLineChatList && !sgCompactChatList && authorLayout.height.isZero) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
+                    let sgOneLineVerticalOffset: CGFloat = (sgCompactMessagePreview && !sgCompactChatList && authorLayout.height.isZero) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
+                    let sgOneLineTitleTextSpacing: CGFloat = (sgCompactMessagePreview && !sgCompactChatList && authorLayout.height.isZero) ? floorToScreenPixels(6.0 * sizeFactor) : 0.0
                     //
                     let titleFrame = CGRect(origin: CGPoint(x: contentRect.origin.x + titleOffset, y: contentRect.origin.y + UIScreenPixel + sgOneLineVerticalOffset), size: titleLayout.size)
                     strongSelf.titleNode.frame = titleFrame

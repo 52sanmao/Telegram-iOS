@@ -30,7 +30,7 @@
 
 "Settings.ChatList.Header" = "CHAT LIST";
 "Settings.CompactChatList" = "Compact Chat List";
-"Settings.OneLineChatList" = "One-Line Chat List";
+"Settings.CompactMessagePreview" = "Compact Message Preview";
 "Settings.ChatList.Lines" = "Chat List Lines";
 "Settings.ChatList.Lines.1" = "1 line";
 "Settings.ChatList.Lines.2" = "2 lines";

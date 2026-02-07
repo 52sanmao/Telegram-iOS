@@ -90,7 +90,7 @@ private enum SGBoolSetting: String {
     case showCreationDate
     case showRegDate
     case compactChatList
-    case oneLineChatList
+    case compactMessagePreview
     case compactFolderNames
     case allChatsHidden
     case defaultEmojisFirst
@@ -190,7 +190,7 @@ private func SGControllerEntries(presentationData: PresentationData, callListSet
     
     entries.append(.header(id: id.count, section: .chatList, text: i18n("Settings.ChatList.Header", lang), badge: nil))
     entries.append(.toggle(id: id.count, section: .chatList, settingName: .compactChatList, value: SGSimpleSettings.shared.compactChatList, text: i18n("Settings.CompactChatList", lang), enabled: true))
-    entries.append(.toggle(id: id.count, section: .chatList, settingName: .oneLineChatList, value: SGSimpleSettings.shared.chatListLines != SGSimpleSettings.ChatListLines.three.rawValue, text: i18n("Settings.OneLineChatList", lang), enabled: true))
+    entries.append(.toggle(id: id.count, section: .chatList, settingName: .compactMessagePreview, value: SGSimpleSettings.shared.chatListLines != SGSimpleSettings.ChatListLines.three.rawValue, text: i18n("Settings.CompactMessagePreview", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .chatList, settingName: .disableChatSwipeOptions, value: !SGSimpleSettings.shared.disableChatSwipeOptions, text: i18n("Settings.ChatSwipeOptions", lang), enabled: true))
     entries.append(.toggle(id: id.count, section: .chatList, settingName: .disableDeleteChatSwipeOption, value: !SGSimpleSettings.shared.disableDeleteChatSwipeOption, text: i18n("Settings.DeleteChatSwipeOption", lang), enabled: !SGSimpleSettings.shared.disableChatSwipeOptions))
     
@@ -479,7 +479,7 @@ public func sgSettingsController(context: AccountContext/*, focusOnItemTag: Int?
         case .compactChatList:
             SGSimpleSettings.shared.compactChatList = value
             askForRestart?()
-        case .oneLineChatList:
+        case .compactMessagePreview:
             SGSimpleSettings.shared.chatListLines = value ? SGSimpleSettings.ChatListLines.one.rawValue : SGSimpleSettings.ChatListLines.three.rawValue
             askForRestart?()
         case .compactFolderNames:

@@ -27,7 +27,6 @@
 
 "Settings.ChatList.Header" = "對話列表";
 "Settings.CompactChatList" = "緊湊型對話列表";
-"Settings.OneLineChatList" = "單行對話列表";
 "Settings.ChatList.Lines" = "對話列表行數";
 "Settings.ChatList.Lines.1" = "1 行";
 "Settings.ChatList.Lines.2" = "2 行";
