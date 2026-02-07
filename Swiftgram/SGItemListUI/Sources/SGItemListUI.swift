@@ -186,7 +186,7 @@ public enum SGItemListUIEntry<Section: SGItemListSection, BoolSetting: Hashable,
             return ItemListSectionHeaderItem(presentationData: presentationData, text: string, badge: badge, sectionId: self.section)
             
         case let .toggle(_, _, setting, value, text, enabled):
-            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: text, value: value, enabled: enabled, sectionId: self.section, style: .blocks, updated: { value in
+            return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: text, value: value, enabled: enabled, maximumNumberOfLines: 0, sectionId: self.section, style: .blocks, updated: { value in
                 arguments.setBoolValue(setting, value)
             })
         case let .notice(_, _, string):
