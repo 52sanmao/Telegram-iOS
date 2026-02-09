@@ -3115,6 +3115,8 @@ extension Customoji {
             throw Error.invalidTileSizes
         }
         return sizes
+    }
+}
 
 extension NotificationContent {
     var forceIsEmpty: Bool {

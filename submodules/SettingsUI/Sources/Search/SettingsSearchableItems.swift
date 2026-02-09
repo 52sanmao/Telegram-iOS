@@ -4496,7 +4496,7 @@ func settingsSearchableItems(
         allItems.append(contentsOf: storiesItems)
         // MARK: Swiftgram
         if watchAppInstalled {
-            let watch = SettingsSearchableItem(id: .watch(0), title: strings.Settings_AppleWatch, alternate: synonyms(strings.SettingsSearch_Synonyms_Watch), icon: .watch, breadcrumbs: [], present: { context, _, present in
+            let watch = SettingsSearchableItem(id: "watch", title: strings.Settings_AppleWatch, alternate: synonyms(strings.SettingsSearch_Synonyms_Watch), icon: .watch, breadcrumbs: [], present: { context, _, present in
                 present(.push, watchSettingsController(context: context))
             })
             allItems.append(watch)

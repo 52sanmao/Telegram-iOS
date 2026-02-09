@@ -124,6 +124,8 @@ private final class RecentSessionSheetContent: CombinedComponent {
         let clientSection = Child(ListSectionComponent.self)
         let optionsSection = Child(ListSectionComponent.self)
         let button = Child(ButtonComponent.self)
+        let baseAppBundleId = Bundle.main.bundleIdentifier!
+        let buildConfig = BuildConfig(baseAppBundleId: baseAppBundleId)
         
         return { context in
             let environment = context.environment[ViewControllerComponentContainer.Environment.self].value
