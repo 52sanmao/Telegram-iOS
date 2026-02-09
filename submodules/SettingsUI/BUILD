@@ -6,10 +6,14 @@ sgdeps = [
     "//Swiftgram/SGStrings:SGStrings"
 ]
 
+sgsrc = [
+    "//Swiftgram/SGRecentSessionApiId:SGRecentSessionApiId",
+]
+
 swift_library(
     name = "SettingsUI",
     module_name = "SettingsUI",
-    srcs = glob([
+    srcs = sgsrc + glob([
 		"Sources/**/*.swift",
     ]),
     copts = [

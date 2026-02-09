@@ -1,4 +1,3 @@
-import BuildConfig
 import Foundation
 import UIKit
 import Display
@@ -124,8 +123,6 @@ private final class RecentSessionSheetContent: CombinedComponent {
         let clientSection = Child(ListSectionComponent.self)
         let optionsSection = Child(ListSectionComponent.self)
         let button = Child(ButtonComponent.self)
-        let baseAppBundleId = Bundle.main.bundleIdentifier!
-        let buildConfig = BuildConfig(baseAppBundleId: baseAppBundleId)
         
         return { context in
             let environment = context.environment[ViewControllerComponentContainer.Environment.self].value
@@ -263,14 +260,8 @@ private final class RecentSessionSheetContent: CombinedComponent {
                 }
                 var appVersion = session.appVersion
                 appVersion = appVersion.replacingOccurrences(of: "APPSTORE", with: "").replacingOccurrences(of: "BETA", with: "Beta").trimmingTrailingSpaces()
-                // MARK: Swiftgram
-                var apiId: String = ""
-                if buildConfig.apiId != session.apiId {
-                    apiId = "\napi_id: \(session.apiId)"
-                }
-                //
                 applicationTitle = strings.AuthSessions_View_Application
-                applicationString =  "\(session.appName) \(appVersion)\(apiId)" // MARK: Swiftgram
+                applicationString = "\(session.appName) \(appVersion)"
                 ipString = session.ip // MARK: Swiftgram
                 locationString = session.country
                 
@@ -297,6 +288,15 @@ private final class RecentSessionSheetContent: CombinedComponent {
                 
                 buttonString = strings.AuthSessions_View_Logout
             }
+
+            // MARK: Swiftgram
+            let sgApiIdString: String?
+            if case let .session(session) = component.subject {
+                sgApiIdString = SGRecentSessionApiId.string(for: session)
+            } else {
+                sgApiIdString = nil
+            }
+            //
             
             let titleFont = Font.bold(24.0)
             let title = title.update(
@@ -364,6 +364,12 @@ private final class RecentSessionSheetContent: CombinedComponent {
                     )
                 ))
             )
+
+            // MARK: Swiftgram
+            if let sgApiIdString {
+                clientSectionItems.append(sgRecentSessionApiIdItem(apiIdString: sgApiIdString, theme: theme, presentationData: presentationData, strings: strings, controller: state.controller))
+            }
+            //
             
             if let ipString {
                 clientSectionItems.append(
