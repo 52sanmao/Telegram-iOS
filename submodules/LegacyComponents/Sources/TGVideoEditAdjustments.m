@@ -445,7 +445,7 @@ const NSTimeInterval TGVideoEditMaximumTelescopeDuration = 60;
 
 - (bool)isDefaultValuesForGif
 {
-    return ![self cropAppliedForAvatar:false] && ![self toolsApplied] && ![self hasPainting];
+    return ![self cropAppliedForAvatar:false] && ![self toolsApplied] && ![self hasPainting] && !_sendAsTelescope;
 }
 
 - (bool)isCropEqualWith:(id<TGMediaEditAdjustments>)adjusments
