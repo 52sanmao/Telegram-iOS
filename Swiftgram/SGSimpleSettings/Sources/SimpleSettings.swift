@@ -103,6 +103,7 @@ public class SGSimpleSettings {
         case rememberLastFolder
         case lastAccountFolders
         case localDNSForProxyHost
+        case mtProxyClientHelloFix
         case sendLargePhotos
         case outgoingPhotoQuality
         case storyStealthMode
@@ -262,6 +263,7 @@ public class SGSimpleSettings {
         Keys.bottomTabStyle.rawValue: BottomTabStyleValues.telegram.rawValue,
         Keys.lastAccountFolders.rawValue: [:],
         Keys.localDNSForProxyHost.rawValue: false,
+        Keys.mtProxyClientHelloFix.rawValue: false,
         Keys.sendLargePhotos.rawValue: false,
         Keys.outgoingPhotoQuality.rawValue: 70,
         Keys.storyStealthMode.rawValue: false,
@@ -373,6 +375,9 @@ public class SGSimpleSettings {
     
     @UserDefault(key: Keys.localDNSForProxyHost.rawValue)
     public var localDNSForProxyHost: Bool
+
+    @UserDefault(key: Keys.mtProxyClientHelloFix.rawValue)
+    public var mtProxyClientHelloFix: Bool
     
     @UserDefault(key: Keys.sendLargePhotos.rawValue)
     public var sendLargePhotos: Bool
