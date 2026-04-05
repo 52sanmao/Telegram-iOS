@@ -264,7 +264,7 @@ private enum ProxySettingsControllerEntry: ItemListNodeEntry {
                     }
                 }, tag: ProxySettingsEntryTag.useProxy)
             case let .localDNSToggle(_, text, value):
-                return ItemListSwitchItem(presentationData: presentationData, title: text, value: value, enabled: true, sectionId: self.section, style: .blocks, updated: { value in
+                return ItemListSwitchItem(presentationData: presentationData, systemStyle: .glass, title: text, value: value, enabled: true, sectionId: self.section, style: .blocks, updated: { value in
                     arguments.toggleLocalDNS(value)
                 })
             case let .localDNSNotice(_, text):
