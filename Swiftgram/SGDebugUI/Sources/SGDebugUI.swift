@@ -46,7 +46,6 @@ private enum SGDebugActions: String {
 private enum SGDebugToggles: String {
     case forceImmediateShareSheet
     case legacyNotificationsFix
-    case mtProxyClientHelloFix
     case inputToolbar
 }
 
@@ -70,7 +69,6 @@ private func SGDebugControllerEntries(presentationData: PresentationData) -> [SG
     entries.append(.action(id: id.count, section: .base, actionType: .clearRegDateCache, text: "Clear Regdate cache", kind: .generic))
     entries.append(.action(id: id.count, section: .base, actionType: .clearOutgoingTranslationLanguageCache, text: "Clear Outgoing Translation cache", kind: .generic))
     entries.append(.toggle(id: id.count, section: .base, settingName: .forceImmediateShareSheet, value: SGSimpleSettings.shared.forceSystemSharing, text: "Force System Share Sheet", enabled: true))
-    entries.append(.toggle(id: id.count, section: .base, settingName: .mtProxyClientHelloFix, value: SGSimpleSettings.shared.mtProxyClientHelloFix, text: "MTProxy ClientHello fix", enabled: true))
     
     entries.append(.action(id: id.count, section: .base, actionType: .restorePurchases, text: "PayWall.RestorePurchases".i18n(presentationData.strings.baseLanguageCode), kind: .generic))
     #if DEBUG
@@ -89,7 +87,6 @@ private func okUndoController(_ text: String, _ presentationData: PresentationDa
 public func sgDebugController(context: AccountContext) -> ViewController {
     var presentControllerImpl: ((ViewController, ViewControllerPresentationArguments?) -> Void)?
     var pushControllerImpl: ((ViewController) -> Void)?
-    var askForRestart: (() -> Void)?
 
     let simplePromise = ValuePromise(true, ignoreRepeated: false)
     
@@ -100,9 +97,6 @@ public func sgDebugController(context: AccountContext) -> ViewController {
             case .legacyNotificationsFix:
                 SGSimpleSettings.shared.legacyNotificationsFix = value
                 SGSimpleSettings.shared.synchronizeShared()
-            case .mtProxyClientHelloFix:
-                SGSimpleSettings.shared.mtProxyClientHelloFix = value
-                askForRestart?()
             case .inputToolbar:
                 SGSimpleSettings.shared.inputToolbar = value
         }
@@ -221,26 +215,10 @@ public func sgDebugController(context: AccountContext) -> ViewController {
     pushControllerImpl = { [weak controller] c in
         (controller?.navigationController as? NavigationController)?.pushViewController(c)
     }
-    askForRestart = {
-        let presentationData = context.sharedContext.currentPresentationData.with { $0 }
-        let lang = presentationData.strings.baseLanguageCode
-        presentControllerImpl?(
-            UndoOverlayController(
-                presentationData: presentationData,
-                content: .info(
-                    title: nil,
-                    text: "Common.RestartRequired".i18n(lang),
-                    timeout: nil,
-                    customUndoText: "Common.RestartNow".i18n(lang)
-                ),
-                elevatedLayout: false,
-                action: { action in if action == .undo { exit(0) }; return true }
-            ),
-            nil
-        )
-    }
     // Workaround
     let _ = pushControllerImpl
     
     return controller
 }
+
+

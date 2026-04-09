@@ -305,11 +305,7 @@ private func proxySettingsControllerEntries(theme: PresentationTheme, strings: P
     entries.append(.enabled(theme, strings.ChatSettings_ConnectionType_UseProxy, proxySettings.enabled, proxySettings.servers.isEmpty))
     // MARK: Swiftgram
     entries.append(.localDNSToggle(theme, i18n("ProxySettings.UseSystemDNS", strings.baseLanguageCode), SGSimpleSettings.shared.localDNSForProxyHost))
-    var sgLocalDnsNotice = i18n("ProxySettings.UseSystemDNS.Notice", strings.baseLanguageCode)
-    if SGSimpleSettings.shared.mtProxyClientHelloFix {
-        sgLocalDnsNotice += "\n\n✅ ClientHello Fix applied"
-    }
-    entries.append(.localDNSNotice(theme, sgLocalDnsNotice))
+    entries.append(.localDNSNotice(theme, i18n("ProxySettings.UseSystemDNS.Notice", strings.baseLanguageCode)))
     entries.append(.serversHeader(theme, strings.SocksProxySetup_SavedProxies))
     entries.append(.addServer(theme, strings.SocksProxySetup_AddProxy, state.editing))
     var index = 0
