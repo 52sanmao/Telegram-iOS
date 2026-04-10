@@ -117,7 +117,8 @@ static TGVideoEditAdjustments *TGMediaAssetsPatchedLivePhotoAdjustments(PGPhotoE
         }
     }
 
-    TGVideoEditAdjustments *patchedAdjustments = [TGVideoEditAdjustments editAdjustmentsWithOriginalSize:videoAdjustments.originalSize cropRect:videoAdjustments.cropRect cropOrientation:videoAdjustments.cropOrientation cropRotation:videoAdjustments.cropRotation cropLockedAspectRatio:videoAdjustments.cropLockedAspectRatio cropMirrored:videoAdjustments.cropMirrored trimStartValue:videoAdjustments.trimStartValue trimEndValue:videoAdjustments.trimEndValue toolValues:videoAdjustments.toolValues paintingData:patchedPaintingData sendAsGif:videoAdjustments.sendAsGif preset:videoAdjustments.preset];
+    // MARK: Swiftgram
+    TGVideoEditAdjustments *patchedAdjustments = [TGVideoEditAdjustments editAdjustmentsWithOriginalSize:videoAdjustments.originalSize cropRect:videoAdjustments.cropRect cropOrientation:videoAdjustments.cropOrientation cropRotation:videoAdjustments.cropRotation cropLockedAspectRatio:videoAdjustments.cropLockedAspectRatio cropMirrored:videoAdjustments.cropMirrored trimStartValue:videoAdjustments.trimStartValue trimEndValue:videoAdjustments.trimEndValue toolValues:videoAdjustments.toolValues paintingData:patchedPaintingData sendAsGif:videoAdjustments.sendAsGif sendAsTelescope:videoAdjustments.sendAsTelescope preset:videoAdjustments.preset];
     if (patchedAdjustments == nil)
         return videoAdjustments;
 
