@@ -1,3 +1,4 @@
+import SGGTranslate
 import SGSimpleSettings
 import Foundation
 import SwiftSignalKit
