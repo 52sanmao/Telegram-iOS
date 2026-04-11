@@ -1968,12 +1968,12 @@ final class ChatListControllerNode: ASDisplayNode, ASGestureRecognizerDelegate {
         // MARK: Swiftgram
         if let sgFoldersView = self.sgFoldersView.view as? HeaderPanelContainerComponent.View {
             if sgShouldDisplayBottomFolders && sgFoldersSize.height > 0.0 {
+                sgFoldersView.layer.removeAnimation(forKey: "opacity")
+                sgFoldersView.alpha = 1.0
                 if sgFoldersView.superview == nil {
                     self.view.addSubview(sgFoldersView)
                     if transition.isAnimated {
                         sgFoldersView.layer.animateAlpha(from: 0.0, to: 1.0, duration: 0.23)
-                    } else {
-                        sgFoldersView.alpha = 1.0
                     }
                 }
                 
@@ -1993,8 +1993,10 @@ final class ChatListControllerNode: ASDisplayNode, ASGestureRecognizerDelegate {
                 // TODO(swiftgram):
                 sgComponentTransition.setFrame(view: sgFoldersView, frame: CGRect(origin: CGPoint(x: 0.0, y: layout.size.height - bottomInset - sgFoldersSize.height - 16.0), size: sgFoldersSize))
             } else {
-                sgFoldersView.layer.animateAlpha(from: 1.0, to: 0.0, duration: 0.2, removeOnCompletion: false, completion: { [weak sgFoldersView] _ in
-                    sgFoldersView?.removeFromSuperview()
+                sgFoldersView.layer.animateAlpha(from: 1.0, to: 0.0, duration: 0.2, removeOnCompletion: false, completion: { [weak sgFoldersView] completed in
+                    if completed {
+                        sgFoldersView?.removeFromSuperview()
+                    }
                 })
             }
         }
