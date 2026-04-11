@@ -5778,6 +5778,11 @@ extension ChatTextInputPanelNode {
                 strongSelf.interfaceInteraction?.sgSelectLastWordIfIdle()
                 strongSelf.formatAttributesItalic(strongSelf)
             },
+            onDate: { [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.interfaceInteraction?.sgSelectLastWordIfIdle()
+                strongSelf.formatAttributesDate(strongSelf)
+            },
             onMonospace: { [weak self] in
                 guard let strongSelf = self else { return }
                 strongSelf.interfaceInteraction?.sgSelectLastWordIfIdle()
