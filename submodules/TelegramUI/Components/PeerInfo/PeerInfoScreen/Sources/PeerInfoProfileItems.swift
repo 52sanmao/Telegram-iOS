@@ -799,7 +799,7 @@ func infoItems(nearestChatParticipant: (String?, Int32?), showProfileId: Bool, d
      
                     // MARK: Swiftgram
                     if channel.hasPermission(.banMembers) || channel.flags.contains(.isCreator) {
-                        items[section]!.append(PeerInfoScreenDisclosureItem(id: ItemSGRecentActions, label: .none, text: presentationData.strings.Group_Info_AdminLog, icon: UIImage(bundleImageName: "Chat/Info/RecentActionsIcon"), action: {
+                        items[section]!.append(PeerInfoScreenDisclosureItem(id: ItemSGRecentActions, label: .none, text: presentationData.strings.Group_Info_AdminLog, icon: PresentationResourcesSettings.recentActions, action: {
                             interaction.openRecentActions()
                         }))
                     }
