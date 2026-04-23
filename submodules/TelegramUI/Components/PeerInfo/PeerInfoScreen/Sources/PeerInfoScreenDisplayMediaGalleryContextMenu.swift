@@ -324,7 +324,36 @@ extension PeerInfoScreenNode {
                 
                 items.append(.action(generateAction(true)))
                 items.append(.action(generateAction(false)))
-                
+
+                let canSortByViews: Bool
+                if let peer = strongSelf.data?.peer {
+                    if peer is TelegramGroup {
+                        canSortByViews = true
+                    } else if let channel = peer as? TelegramChannel {
+                        switch channel.info {
+                        case .broadcast, .group:
+                            canSortByViews = true
+                        }
+                    } else {
+                        canSortByViews = false
+                    }
+                } else {
+                    canSortByViews = false
+                }
+                if canSortByViews {
+                    items.append(.separator)
+                    let sorting = pane.sorting
+                    items.append(.action(ContextMenuActionItem(text: sorting == .date ? strings.Stats_Message_Views : strings.PeerInfo_Gifts_SortByDate, icon: { theme in
+                        return generateTintedImage(image: UIImage(bundleImageName: sorting == .date ? "Peer Info/SortValue" : "Peer Info/SortDate"), color: theme.contextMenu.primaryColor)
+                    }, action: { [weak pane] _, a in
+                        a(.default)
+                        guard let pane = pane else {
+                            return
+                        }
+                        pane.updateSorting(sorting == .date ? .views : .date)
+                    })))
+                }
+
                 var ignoreNextActions = false
                 if strongSelf.chatLocation.threadId == nil {
                     items.append(.action(ContextMenuActionItem(text: strings.SharedMedia_ShowCalendar, icon: { theme in
@@ -335,7 +364,7 @@ extension PeerInfoScreenNode {
                         }
                         ignoreNextActions = true
                         a(.default)
-                        
+
                         self?.openMediaCalendar()
                     })))
                 }

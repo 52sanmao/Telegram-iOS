@@ -1105,6 +1105,11 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
         case music
     }
 
+    public enum Sorting: Int32 {
+        case date = 0
+        case views = 1
+    }
+
     public struct ZoomLevel {
         fileprivate var value: SparseItemGrid.ZoomLevel
 
@@ -1185,6 +1190,8 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
 
     private let stateTag: MessageTags
     private var storedStateDisposable: Disposable?
+    private(set) var sorting: Sorting = .date
+    private var zoomLevelRawValue: Int32 = 3
 
     private weak var currentGestureItem: SparseItemGridDisplayItem?
 
@@ -1428,7 +1435,8 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
             guard let strongSelf = self else {
                 return
             }
-            let _ = updateVisualMediaStoredState(engine: strongSelf.context.engine, peerId: strongSelf.peerId, messageTag: strongSelf.stateTag, state: VisualMediaStoredState(zoomLevel: Int32(zoomLevel.rawValue))).start()
+            strongSelf.zoomLevelRawValue = Int32(zoomLevel.rawValue)
+            let _ = updateVisualMediaStoredState(engine: strongSelf.context.engine, peerId: strongSelf.peerId, messageTag: strongSelf.stateTag, state: VisualMediaStoredState(zoomLevel: Int32(zoomLevel.rawValue), sorting: strongSelf.sorting.rawValue)).start()
         }
         
         self._itemInteraction = VisualMediaItemInteraction(
@@ -1533,7 +1541,9 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
                 return
             }
             if let value = value {
-                strongSelf.updateZoomLevel(level: ZoomLevel(rawValue: value.zoomLevel))
+                strongSelf.zoomLevelRawValue = value.zoomLevel
+                strongSelf.sorting = value.sorting.flatMap(Sorting.init(rawValue:)) ?? .date
+                strongSelf.itemGrid.setZoomLevel(level: ZoomLevel(rawValue: value.zoomLevel).value)
             }
             strongSelf.requestHistoryAroundVisiblePosition(synchronous: false, reloadAtTop: false)
         })
@@ -1772,14 +1782,65 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
     }
 
     public func updateZoomLevel(level: ZoomLevel) {
+        self.zoomLevelRawValue = level.rawValue
         self.itemGrid.setZoomLevel(level: level.value)
 
-        let _ = updateVisualMediaStoredState(engine: self.context.engine, peerId: self.peerId, messageTag: self.stateTag, state: VisualMediaStoredState(zoomLevel: level.rawValue)).start()
+        let _ = updateVisualMediaStoredState(engine: self.context.engine, peerId: self.peerId, messageTag: self.stateTag, state: VisualMediaStoredState(zoomLevel: level.rawValue, sorting: self.sorting.rawValue)).start()
     }
-    
+
+    public func updateSorting(_ sorting: Sorting) {
+        if self.sorting == sorting {
+            return
+        }
+        self.sorting = sorting
+
+        let _ = updateVisualMediaStoredState(engine: self.context.engine, peerId: self.peerId, messageTag: self.stateTag, state: VisualMediaStoredState(zoomLevel: self.zoomLevelRawValue, sorting: sorting.rawValue)).start()
+        self.isRequestingView = false
+        self.requestHistoryAroundVisiblePosition(synchronous: true, reloadAtTop: true)
+    }
+
     public func ensureMessageIsVisible(id: MessageId) {
     }
-    
+
+    private func messageViewCount(_ message: Message) -> Int? {
+        for attribute in message.attributes {
+            if let attribute = attribute as? ViewCountMessageAttribute {
+                return attribute.count
+            }
+        }
+        return nil
+    }
+
+    private func sortMappedItemsIfNeeded(_ items: [VisualMediaItem]) -> [VisualMediaItem] {
+        guard self.sorting == .views else {
+            return items
+        }
+
+        return items.sorted { lhs, rhs in
+            let lhsViews = self.messageViewCount(lhs.message)
+            let rhsViews = self.messageViewCount(rhs.message)
+            switch (lhsViews, rhsViews) {
+            case let (.some(lhsViews), .some(rhsViews)):
+                if lhsViews != rhsViews {
+                    return lhsViews > rhsViews
+                }
+            case (.some, .none):
+                return true
+            case (.none, .some):
+                return false
+            case (.none, .none):
+                break
+            }
+
+            if lhs.message.timestamp != rhs.message.timestamp {
+                return lhs.message.timestamp > rhs.message.timestamp
+            }
+            return lhs.message.id > rhs.message.id
+        }.enumerated().map { index, item in
+            return VisualMediaItem(index: index, message: item.message, localMonthTimestamp: item.localMonthTimestamp)
+        }
+    }
+
     private func requestHistoryAroundVisiblePosition(synchronous: Bool, reloadAtTop: Bool) {
         if self.isRequestingView {
             return
@@ -1792,25 +1853,44 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
         self.listDisposable.set((self.listSource.state
         |> deliverOn(queue)).start(next: { [weak self] list in
             let timezoneOffset = Int32(TimeZone.current.secondsFromGMT())
+            let sorting = self?.sorting ?? .date
 
-            var mappedItems: [SparseItemGrid.Item] = []
+            var mappedItems: [VisualMediaItem] = []
             var mappedHoles: [SparseItemGrid.HoleAnchor] = []
             var totalCount = list.totalCount
+            var viewsBoundaryHole: VisualMediaHoleAnchor?
             if list.items.isEmpty && list.isLoading && list.totalCount == 0 {
                 totalCount = 100
             } else {
                 for item in list.items {
                     switch item.content {
                     case let .message(message, isLocal):
-                        mappedItems.append(VisualMediaItem(index: item.index, message: message, localMonthTimestamp: Month(localTimestamp: message.timestamp + timezoneOffset).packedValue))
-                        if !isLocal {
-                            mappedHoles.append(VisualMediaHoleAnchor(index: item.index, messageId: message.id, localMonthTimestamp: Month(localTimestamp: message.timestamp + timezoneOffset).packedValue))
+                        let localMonthTimestamp = Month(localTimestamp: message.timestamp + timezoneOffset).packedValue
+                        mappedItems.append(VisualMediaItem(index: item.index, message: message, localMonthTimestamp: localMonthTimestamp))
+                        let holeAnchor = VisualMediaHoleAnchor(index: item.index, messageId: message.id, localMonthTimestamp: localMonthTimestamp)
+                        if sorting == .views {
+                            if !isLocal {
+                                viewsBoundaryHole = holeAnchor
+                            }
+                        } else if !isLocal {
+                            mappedHoles.append(holeAnchor)
                         }
                     case let .placeholder(id, timestamp):
-                        mappedHoles.append(VisualMediaHoleAnchor(index: item.index, messageId: id, localMonthTimestamp: Month(localTimestamp: timestamp + timezoneOffset).packedValue))
+                        let holeAnchor = VisualMediaHoleAnchor(index: item.index, messageId: id, localMonthTimestamp: Month(localTimestamp: timestamp + timezoneOffset).packedValue)
+                        if sorting == .views {
+                            viewsBoundaryHole = holeAnchor
+                        } else {
+                            mappedHoles.append(holeAnchor)
+                        }
                     }
                 }
+                mappedItems = self?.sortMappedItemsIfNeeded(mappedItems) ?? mappedItems
+                if sorting == .views, totalCount > mappedItems.count, let viewsBoundaryHole {
+                    mappedHoles = [VisualMediaHoleAnchor(index: mappedItems.count, messageId: viewsBoundaryHole.messageId, localMonthTimestamp: viewsBoundaryHole.localMonthTimestamp)]
+                }
             }
+
+            let mappedSparseItems: [SparseItemGrid.Item] = mappedItems.map { $0 }
 
             Queue.mainQueue().async {
                 guard let strongSelf = self else {
@@ -1818,7 +1898,7 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
                 }
 
                 let items = SparseItemGrid.Items(
-                    items: mappedItems,
+                    items: mappedSparseItems,
                     holeAnchors: mappedHoles,
                     count: totalCount,
                     itemBinding: strongSelf.itemGridBinding,
@@ -2424,9 +2504,11 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
 
 public final class VisualMediaStoredState: Codable {
     public let zoomLevel: Int32
+    public let sorting: Int32?
 
-    public init(zoomLevel: Int32) {
+    public init(zoomLevel: Int32, sorting: Int32? = nil) {
         self.zoomLevel = zoomLevel
+        self.sorting = sorting
     }
 }
 
