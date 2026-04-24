@@ -1190,7 +1190,7 @@ public final class PeerInfoVisualMediaPaneNode: ASDisplayNode, PeerInfoPaneNode,
 
     private let stateTag: MessageTags
     private var storedStateDisposable: Disposable?
-    private(set) var sorting: Sorting = .date
+    public private(set) var sorting: Sorting = .date
     private var zoomLevelRawValue: Int32 = 3
 
     private weak var currentGestureItem: SparseItemGridDisplayItem?
