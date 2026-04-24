@@ -28,6 +28,19 @@ rm -rf build
 mkdir build
 pushd build
 
+cat > ../include/meson.build <<'EOF'
+# Revision file (vcs_version.h) generation
+vcs_cdata = configuration_data()
+vcs_cdata.set('VCS_TAG', meson.project_version())
+rev_target = configure_file(
+    input: 'vcs_version.h.in',
+    output: 'vcs_version.h',
+    configuration: vcs_cdata,
+)
+
+subdir('dav1d')
+EOF
+
 meson.py setup .. --cross-file="$CROSSFILE" $MESON_OPTIONS
 ninja
 
