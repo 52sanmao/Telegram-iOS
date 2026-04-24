@@ -1469,6 +1469,7 @@ private final class LensTransitionContainerEffectViewImpl: UIView, LensTransitio
     
     func update(theme: PresentationTheme) {
         self.theme = theme
+        #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             let glassEffectValue: UIGlassEffect
             if theme.overallDarkAppearance {
@@ -1479,6 +1480,13 @@ private final class LensTransitionContainerEffectViewImpl: UIView, LensTransitio
                 //glassEffectValue.tintColor = UIColor(white: 1.0, alpha: 0.1)
             }
             self.glassView.effect = glassEffectValue
+            return
+        }
+        #endif
+        if theme.overallDarkAppearance {
+            self.glassView.effect = UIBlurEffect(style: .systemUltraThinMaterialDark)
+        } else {
+            self.glassView.effect = UIBlurEffect(style: .systemUltraThinMaterialLight)
         }
     }
     
@@ -1486,9 +1494,14 @@ private final class LensTransitionContainerEffectViewImpl: UIView, LensTransitio
         transition.animateView {
             self.glassView.bounds.size = size
             self.glassView.center = CGPoint(x: size.width * 0.5, y: size.height * 0.5)
+            #if compiler(>=6.2)
             if #available(iOS 26.0, *) {
                 self.glassView.cornerConfiguration = .corners(radius: UICornerRadius(floatLiteral: cornerRadius))
+                return
             }
+            #endif
+            self.glassView.layer.cornerRadius = cornerRadius
+            self.glassView.clipsToBounds = true
         }
     }
     
@@ -1582,23 +1595,59 @@ private final class LensTransitionContainerEffectViewImpl: UIView, LensTransitio
     }
     
     func updateCornerRadius(duration: Double, keyframes: [CGFloat]) {
-        guard #available(iOS 26.0, *) else {
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            guard keyframes.count >= 2 else {
+                if let last = keyframes.last {
+                    self.glassView.cornerConfiguration = .corners(radius: UICornerRadius(floatLiteral: last))
+                }
+                return
+            }
+
+            // Start value
+            self.glassView.cornerConfiguration = .corners(radius: UICornerRadius(floatLiteral: keyframes[0]))
+
+            let segmentCount = keyframes.count - 1
+            let relativeStep = 1.0 / Double(segmentCount)
+
+            var options: UIView.KeyframeAnimationOptions = [.calculationModeLinear]
+            options.insert(UIView.KeyframeAnimationOptions(rawValue: UIView.AnimationOptions.curveLinear.rawValue))
+            UIView.animateKeyframes(
+                withDuration: duration,
+                delay: 0.0,
+                options: options,
+                animations: {
+                    for i in 0 ..< segmentCount {
+                        let nextValue = keyframes[i + 1]
+                        let relativeStartTime = Double(i) * relativeStep
+                        let relativeDuration = (i == segmentCount - 1) ? (1.0 - relativeStartTime) : relativeStep
+                        UIView.addKeyframe(
+                            withRelativeStartTime: relativeStartTime,
+                            relativeDuration: relativeDuration
+                        ) {
+                            self.glassView.cornerConfiguration = .corners(radius: UICornerRadius(floatLiteral: nextValue))
+                        }
+                    }
+                },
+                completion: nil
+            )
             return
         }
-        
+        #endif
         guard keyframes.count >= 2 else {
             if let last = keyframes.last {
-                self.glassView.cornerConfiguration = .corners(radius: UICornerRadius(floatLiteral: last))
+                self.glassView.layer.cornerRadius = last
+                self.glassView.clipsToBounds = true
             }
             return
         }
-        
-        // Start value
-        self.glassView.cornerConfiguration = .corners(radius: UICornerRadius(floatLiteral: keyframes[0]))
-        
+
+        self.glassView.layer.cornerRadius = keyframes[0]
+        self.glassView.clipsToBounds = true
+
         let segmentCount = keyframes.count - 1
         let relativeStep = 1.0 / Double(segmentCount)
-        
+
         var options: UIView.KeyframeAnimationOptions = [.calculationModeLinear]
         options.insert(UIView.KeyframeAnimationOptions(rawValue: UIView.AnimationOptions.curveLinear.rawValue))
         UIView.animateKeyframes(
@@ -1614,7 +1663,8 @@ private final class LensTransitionContainerEffectViewImpl: UIView, LensTransitio
                         withRelativeStartTime: relativeStartTime,
                         relativeDuration: relativeDuration
                     ) {
-                        self.glassView.cornerConfiguration = .corners(radius: UICornerRadius(floatLiteral: nextValue))
+                        self.glassView.layer.cornerRadius = nextValue
+                        self.glassView.clipsToBounds = true
                     }
                 }
             },
