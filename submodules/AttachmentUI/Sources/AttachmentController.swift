@@ -750,45 +750,50 @@ public class AttachmentController: ViewController, MinimizableController {
                 }
             }
             self.panel.invokeAICompose = { [weak self] in
-                Task { @MainActor in
-                    guard let self, let controller = self.controller, let mediaPickerContext = self.mediaPickerContext else {
-                        return
-                    }
-                    
-                    guard let caption = await mediaPickerContext.caption.get() else {
-                        return
-                    }
-                    if caption.length == 0 {
-                        return
-                    }
-                    
-                    let textProcessingScreen = await controller.context.sharedContext.makeTextProcessingScreen(
-                        context: controller.context,
-                        theme: self.presentationData.theme,
-                        mode: .edit(
-                            saveRestoreStateId: nil,
-                            completion: { [weak self] text in
-                                guard let self, let mediaPickerContext = self.mediaPickerContext else {
-                                    return
-                                }
-                                self.panel.updateCaption(chatInputStateStringWithAppliedEntities(text.text, entities: text.entities))
-                                mediaPickerContext.setCaption(chatInputStateStringWithAppliedEntities(text.text, entities: text.entities))
-                            },
-                            send: { [weak self] text in
-                                guard let self, let mediaPickerContext = self.mediaPickerContext else {
-                                    return
-                                }
-                                mediaPickerContext.setCaption(chatInputStateStringWithAppliedEntities(text.text, entities: text.entities))
-                                mediaPickerContext.send(mode: .generic, attachmentMode: .media, parameters: nil)
-                            },
-                            sendContextActions: nil
-                        ),
-                        inputText: TextWithEntities(text: caption.string, entities: []),
-                        copyResult: nil,
-                        translateChat: nil
-                    )
-                    self.controller?.push(textProcessingScreen)
+                guard let self, let mediaPickerContext = self.mediaPickerContext else {
+                    return
                 }
+                let _ = (mediaPickerContext.caption
+                |> take(1)
+                |> deliverOnMainQueue).startStandalone(next: { [weak self] caption in
+                    guard let self, let caption, !caption.string.isEmpty else {
+                        return
+                    }
+
+                    let captionText = caption.string
+                    Task { @MainActor [weak self] in
+                        guard let self, let controller = self.controller, let mediaPickerContext = self.mediaPickerContext else {
+                            return
+                        }
+
+                        let textProcessingScreen = await controller.context.sharedContext.makeTextProcessingScreen(
+                            context: controller.context,
+                            theme: self.presentationData.theme,
+                            mode: .edit(
+                                saveRestoreStateId: nil,
+                                completion: { [weak self] text in
+                                    guard let self, let mediaPickerContext = self.mediaPickerContext else {
+                                        return
+                                    }
+                                    self.panel.updateCaption(chatInputStateStringWithAppliedEntities(text.text, entities: text.entities))
+                                    mediaPickerContext.setCaption(chatInputStateStringWithAppliedEntities(text.text, entities: text.entities))
+                                },
+                                send: { [weak self] text in
+                                    guard let self, let mediaPickerContext = self.mediaPickerContext else {
+                                        return
+                                    }
+                                    mediaPickerContext.setCaption(chatInputStateStringWithAppliedEntities(text.text, entities: text.entities))
+                                    mediaPickerContext.send(mode: .generic, attachmentMode: .media, parameters: nil)
+                                },
+                                sendContextActions: nil
+                            ),
+                            inputText: TextWithEntities(text: captionText, entities: []),
+                            copyResult: nil,
+                            translateChat: nil
+                        )
+                        self.controller?.push(textProcessingScreen)
+                    }
+                })
             }
             
             self.panel.onMainButtonPressed = { [weak self] in
