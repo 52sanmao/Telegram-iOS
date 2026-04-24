@@ -223,6 +223,7 @@ final class PasskeysScreenComponent: Component {
             component.passkeysDataUpdated(self.passkeysData ?? [])
             self.state?.updated(transition: .spring(duration: 0.4))
             
+            #if compiler(>=6.2)
             if #available(iOS 26.0, *) {
                 Task { @MainActor in
                     let updater = ASCredentialUpdater()
@@ -250,6 +251,8 @@ final class PasskeysScreenComponent: Component {
                     }
                 }
             }
+            #endif
+
         }
         
         func update(component: PasskeysScreenComponent, availableSize: CGSize, state: EmptyComponentState, environment: Environment<ViewControllerComponentContainer.Environment>, transition: ComponentTransition) -> CGSize {
