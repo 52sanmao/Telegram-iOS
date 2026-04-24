@@ -339,21 +339,22 @@ public class GlassBackgroundView: UIView {
     public static var useCustomGlassImpl: Bool = false
     
     public override init(frame: CGRect) {
+        #if compiler(>=6.2)
         if #available(iOS 26.0, *), !GlassBackgroundView.useCustomGlassImpl {
             self.legacyView = nil
             self.legacyHighlightContainerView = nil
-            
+
             let glassEffect = UIGlassEffect(style: .regular)
             glassEffect.isInteractive = false
             let nativeView = UIVisualEffectView(effect: glassEffect)
             self.nativeViewClippingContext = ClippingShapeContext(view: nativeView)
             self.nativeView = nativeView
-            
+
             let nativeParamsView = EffectSettingsContainerView(frame: CGRect())
             self.nativeParamsView = nativeParamsView
-            
+
             nativeParamsView.addSubview(nativeView)
-            
+
             self.foregroundView = nil
             self.shadowView = nil
         } else {
@@ -366,9 +367,22 @@ public class GlassBackgroundView: UIView {
             self.nativeViewClippingContext = nil
             self.nativeParamsView = nil
             self.foregroundView = UIImageView()
-            
+
             self.shadowView = UIImageView()
         }
+        #else
+        self.legacyView = LegacyGlassView(frame: CGRect())
+        let legacyHighlightContainerView = UIView()
+        legacyHighlightContainerView.isUserInteractionEnabled = false
+        legacyHighlightContainerView.clipsToBounds = true
+        self.legacyHighlightContainerView = legacyHighlightContainerView
+        self.nativeView = nil
+        self.nativeViewClippingContext = nil
+        self.nativeParamsView = nil
+        self.foregroundView = UIImageView()
+
+        self.shadowView = UIImageView()
+        #endif
         
         self.maskContainerView = UIView()
         self.maskContainerView.backgroundColor = .white
@@ -586,9 +600,10 @@ public class GlassBackgroundView: UIView {
                 transition.setAlpha(view: foregroundView, alpha: isVisible ? 1.0 : 0.0)
             } else {
                 if let nativeParamsView = self.nativeParamsView, let nativeView = self.nativeView {
+                    #if compiler(>=6.2)
                     if #available(iOS 26.0, *) {
                         var glassEffect: UIGlassEffect?
-                        
+
                         if isVisible {
                             let glassEffectValue: UIGlassEffect
                             switch tintColor.kind {
@@ -620,7 +635,7 @@ public class GlassBackgroundView: UIView {
                             glassEffectValue.isInteractive = params.isInteractive
                             glassEffect = glassEffectValue
                         }
-                        
+
                         if glassEffect == nil {
                             if nativeView.effect is UIGlassEffect {
                                 if #available(iOS 26.1, *) {
@@ -653,7 +668,7 @@ public class GlassBackgroundView: UIView {
                                 }
                             }
                         }
-                        
+
                         if isDark {
                             nativeParamsView.lumaMin = 0.0
                             nativeParamsView.lumaMax = 0.15
@@ -662,6 +677,7 @@ public class GlassBackgroundView: UIView {
                             nativeParamsView.lumaMax = 0.801
                         }
                     }
+                    #endif
                 }
             }
         }
@@ -702,22 +718,28 @@ public final class GlassBackgroundContainerView: UIView {
     }
     
     public init(spacing: CGFloat = 7.0) {
+        #if compiler(>=6.2)
         if #available(iOS 26.0, *), !GlassBackgroundView.useCustomGlassImpl {
             let effect = UIGlassContainerEffect()
             effect.spacing = spacing
             let nativeView = UIVisualEffectView(effect: effect)
             self.nativeView = nativeView
-            
+
             let nativeParamsView = EffectSettingsContainerView(frame: CGRect())
             self.nativeParamsView = nativeParamsView
             nativeParamsView.addSubview(nativeView)
-            
+
             self.legacyView = nil
         } else {
             self.nativeView = nil
             self.nativeParamsView = nil
             self.legacyView = ContentView()
         }
+        #else
+        self.nativeView = nil
+        self.nativeParamsView = nil
+        self.legacyView = ContentView()
+        #endif
         
         super.init(frame: CGRect())
         
